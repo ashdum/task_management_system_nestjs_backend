@@ -17,6 +17,9 @@ export class RolesGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const user = request.user; // Из JWT
+    if(!user){
+        return true;
+    }
     let dashboardId = request.params.id || request.body.dashboardId;
 
     if (request.params.id && !dashboardId) {

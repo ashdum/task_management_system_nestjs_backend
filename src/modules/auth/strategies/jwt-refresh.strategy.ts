@@ -5,9 +5,17 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthService } from '../auth.service';
 import { RedisUtil } from '../../../common/utils/redis.util';
 
+// Интерфейс для payload токена, соответствующий фронтенду
 interface JwtPayload {
   sub: string;
   email: string;
+  user: {
+    id: string;
+    email: string;
+    fullName?: string;
+    createdAt: string;
+    updatedAt?: string;
+  };
   iat: number;
   exp: number;
 }
@@ -37,7 +45,7 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
     }
 
     return {
-      sub: user.sub, // Используем sub вместо id
+      sub: user.sub,
       email: user.email,
     };
   }

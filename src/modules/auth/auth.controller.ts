@@ -15,9 +15,9 @@ export class AuthController {
   @ApiResponse({ status: 201, description: 'Пользователь успешно зарегистрирован' })
   @ApiResponse({ status: 400, description: 'Неверный запрос' })
   @Post('register')
+  @HttpCode(HttpStatus.CREATED)
   async register(@Body() registerDto: RegisterDto) {
-    const user = await this.authService.register(registerDto);
-    return { message: 'Пользователь успешно зарегистрирован', data: user };
+    return this.authService.register(registerDto); // Возвращаем только токены
   }
 
   @ApiOperation({ summary: 'Вход пользователя и получение JWT-токенов' })
@@ -26,8 +26,7 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(@Body() loginDto: LoginDto) {
-    const tokens = await this.authService.login(loginDto);
-    return { message: 'Вход успешен', data: tokens };
+    return this.authService.login(loginDto); // Возвращаем только токены
   }
 
   @ApiOperation({ summary: 'Обновление JWT-токенов' })
@@ -38,8 +37,7 @@ export class AuthController {
   @UseGuards(JwtRefreshGuard)
   @HttpCode(HttpStatus.OK)
   async refreshTokens(@Request() req: { user: { sub: string; email: string } }) {
-    const tokens = await this.authService.refreshTokens(req.user);
-    return { message: 'Токены успешно обновлены', data: tokens };
+    return this.authService.refreshTokens(req.user); // Возвращаем только токены
   }
 
   @ApiOperation({ summary: 'Выход пользователя' })
@@ -51,6 +49,6 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async logout(@Request() req: { user: { sub: string } }) {
     await this.authService.logout(req.user.sub);
-    return { message: 'Выход успешен' };
+    return { message: 'Выход успешен' }; // Оставляем сообщение, так как тело не важно
   }
 }

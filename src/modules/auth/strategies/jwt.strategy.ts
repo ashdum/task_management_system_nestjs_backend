@@ -5,10 +5,17 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthService } from '../auth.service';
 import { RedisUtil } from '../../../common/utils/redis.util';
 
-// Интерфейс для payload токена
+// Интерфейс для payload токена, соответствующий фронтенду
 interface JwtPayload {
   sub: string; // ID пользователя
   email: string; // Email пользователя
+  user: {
+    id: string;
+    email: string;
+    fullName?: string;
+    createdAt: string;
+    updatedAt?: string;
+  };
   iat: number; // Issued at
   exp: number; // Expiration
 }
@@ -28,21 +35,19 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   // Validate JWT payload
   async validate(payload: JwtPayload) {
-    // Step 1: Validate user existence via AuthService
     const user = await this.authService.validateUser(payload.sub);
     if (!user) {
       throw new UnauthorizedException('Пользователь не найден или токен недействителен');
     }
 
-    // Step 2: Check if token exists in Redis
     const storedToken = await this.redisUtil.getToken(`access_token:${payload.sub}`);
     if (!storedToken) {
       throw new UnauthorizedException('Токен не найден в Redis');
     }
 
-    // Step 3: Return user data for use in guards/controllers
+    // Return user data matching frontend expectation
     return {
-      sub: user.sub, // Используем sub вместо id
+      sub: user.sub,
       email: user.email,
     };
   }

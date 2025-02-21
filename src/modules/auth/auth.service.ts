@@ -18,8 +18,8 @@ export class AuthService {
     private readonly redisUtil: RedisUtil,
   ) {}
 
-  // Register a new user
-  async register(registerDto: RegisterDto): Promise<User> {
+  // Register a new user and return tokens
+  async register(registerDto: RegisterDto): Promise<{ accessToken: string; refreshToken: string }> {
     const { email, password, fullName, avatar } = registerDto;
 
     const existingUser = await this.userRepository.findOne({ where: { email } });
@@ -34,7 +34,36 @@ export class AuthService {
       fullName,
       avatar,
     });
-    return this.userRepository.save(user);
+    const savedUser = await this.userRepository.save(user);
+
+    // Generate tokens with full user object in payload
+    const payload = {
+      sub: savedUser.id,
+      email: savedUser.email,
+      user: {
+        id: savedUser.id,
+        email: savedUser.email,
+        fullName: savedUser.fullName,
+        createdAt: savedUser.createdAt.toISOString(),
+        updatedAt: savedUser.updatedAt.toISOString(),
+      },
+    };
+    const accessToken = this.jwtService.sign(payload, {
+      secret: process.env.JWT_ACCESS_SECRET,
+      expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
+    });
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: process.env.JWT_REFRESH_SECRET,
+      expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
+    });
+
+    const accessTtl = this.getTtlInSeconds(process.env.JWT_ACCESS_EXPIRES_IN || '15m');
+    const refreshTtl = this.getTtlInSeconds(process.env.JWT_REFRESH_EXPIRES_IN || '7d');
+
+    await this.redisUtil.setToken(`access_token:${savedUser.id}`, accessToken, accessTtl);
+    await this.redisUtil.setToken(`refresh_token:${savedUser.id}`, refreshToken, refreshTtl);
+
+    return { accessToken, refreshToken };
   }
 
   // Login user and return JWT tokens
@@ -51,7 +80,18 @@ export class AuthService {
       throw new UnauthorizedException('Неверные учетные данные');
     }
 
-    const payload = { sub: user.id, email: user.email };
+    // Generate tokens with full user object in payload
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        createdAt: user.createdAt.toISOString(),
+        updatedAt: user.updatedAt.toISOString(),
+      },
+    };
     const accessToken = this.jwtService.sign(payload, {
       secret: process.env.JWT_ACCESS_SECRET,
       expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
@@ -72,7 +112,22 @@ export class AuthService {
 
   // Refresh JWT tokens using validated user
   async refreshTokens(user: { sub: string; email: string }): Promise<{ accessToken: string; refreshToken: string }> {
-    const payload = { sub: user.sub, email: user.email };
+    const foundUser = await this.userRepository.findOne({ where: { id: user.sub } });
+    if (!foundUser) {
+      throw new UnauthorizedException('Пользователь не найден');
+    }
+
+    const payload = {
+      sub: user.sub,
+      email: user.email,
+      user: {
+        id: foundUser.id,
+        email: foundUser.email,
+        fullName: foundUser.fullName,
+        createdAt: foundUser.createdAt.toISOString(),
+        updatedAt: foundUser.updatedAt.toISOString(),
+      },
+    };
     const newAccessToken = this.jwtService.sign(payload, {
       secret: process.env.JWT_ACCESS_SECRET,
       expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
