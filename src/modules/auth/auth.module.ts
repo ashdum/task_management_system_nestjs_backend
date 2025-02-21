@@ -9,6 +9,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 import { User } from '../users/entities/user.entity';
 import { RedisUtil } from '../../common/utils/redis.util';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { RedisUtil } from '../../common/utils/redis.util';
         signOptions: { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m' },
       }),
     }),
+    UsersModule, // Импортируем UsersModule для доступа к UsersService
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, JwtRefreshStrategy, RedisUtil],
