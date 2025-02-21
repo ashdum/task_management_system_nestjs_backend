@@ -4,8 +4,9 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthService } from '../auth.service';
 import { RedisUtil } from '../../../common/utils/redis.util';
+import { Request } from 'express';
 
-// Интерфейс для payload токена, соответствующий фронтенду
+// Интерфейс для payload токена
 interface JwtPayload {
   sub: string;
   email: string;
@@ -27,21 +28,30 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
     private readonly redisUtil: RedisUtil,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromBodyField('refreshToken'),
+      jwtFromRequest: ExtractJwt.fromBodyField('refreshToken'), // Извлекаем refreshToken из тела запроса
       ignoreExpiration: false,
       secretOrKey: process.env.JWT_REFRESH_SECRET || 'default_refresh_secret',
+      passReqToCallback: true, // Передаем объект req в validate
     });
   }
 
-  async validate(payload: JwtPayload) {
+  // Validate JWT payload and check refreshToken
+  async validate(req: Request, payload: JwtPayload): Promise<{ sub: string; email: string }> {
+    // Извлекаем refreshToken из тела запроса
+    const refreshToken: string = req.body.refreshToken;
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh-токен не предоставлен');
+    }
+
     const user = await this.authService.validateUser(payload.sub);
     if (!user) {
       throw new UnauthorizedException('Пользователь не найден или токен недействителен');
     }
 
-    const tokenExists = await this.redisUtil.tokenExists(`refresh_token:${payload.sub}`);
-    if (!tokenExists) {
-      throw new UnauthorizedException('Refresh-токен недействителен или истек');
+    // Получаем текущий refreshToken из Redis
+    const storedRefreshToken = await this.redisUtil.getToken(`refresh_token:${payload.sub}`);
+    if (!storedRefreshToken || storedRefreshToken !== refreshToken) {
+      throw new UnauthorizedException('Refresh-токен недействителен или устарел');
     }
 
     return {

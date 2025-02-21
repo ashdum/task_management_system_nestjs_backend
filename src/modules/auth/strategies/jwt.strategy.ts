@@ -4,8 +4,9 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthService } from '../auth.service';
 import { RedisUtil } from '../../../common/utils/redis.util';
+import { Request } from 'express';
 
-// Интерфейс для payload токена, соответствующий фронтенду
+// Интерфейс для payload токена
 interface JwtPayload {
   sub: string; // ID пользователя
   email: string; // Email пользователя
@@ -30,22 +31,29 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: process.env.JWT_ACCESS_SECRET || 'default_secret_key',
+      passReqToCallback: true, // Передаем объект req в validate
     });
   }
 
-  // Validate JWT payload
-  async validate(payload: JwtPayload) {
+  // Validate JWT payload and check accessToken
+  async validate(req: Request, payload: JwtPayload): Promise<{ sub: string; email: string }> {
+    // Извлекаем accessToken из заголовка Authorization
+    const accessToken = req.headers.authorization?.replace('Bearer ', '');
+    if (!accessToken) {
+      throw new UnauthorizedException('Access-токен не предоставлен');
+    }
+
     const user = await this.authService.validateUser(payload.sub);
     if (!user) {
       throw new UnauthorizedException('Пользователь не найден или токен недействителен');
     }
 
-    const storedToken = await this.redisUtil.getToken(`access_token:${payload.sub}`);
-    if (!storedToken) {
-      throw new UnauthorizedException('Токен не найден в Redis');
+    // Получаем текущий accessToken из Redis
+    const storedAccessToken = await this.redisUtil.getToken(`access_token:${payload.sub}`);
+    if (!storedAccessToken || storedAccessToken !== accessToken) {
+      throw new UnauthorizedException('Access-токен недействителен или устарел');
     }
 
-    // Return user data matching frontend expectation
     return {
       sub: user.sub,
       email: user.email,
