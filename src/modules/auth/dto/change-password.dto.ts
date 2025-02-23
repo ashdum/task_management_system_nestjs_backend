@@ -1,4 +1,4 @@
-// src/modules/users/dto/change-password.dto.ts
+// src/modules/auth/dto/change-password.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
 import { IsStrongPassword } from 'src/common/decorators/validation';

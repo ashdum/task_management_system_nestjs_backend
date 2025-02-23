@@ -8,6 +8,7 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { RedisUtil } from '../../common/utils/redis.util';
 import { User } from '../users/entities/user.entity';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class AuthService {
@@ -16,9 +17,9 @@ export class AuthService {
     private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
     private readonly redisUtil: RedisUtil,
-  ) {}
+    private readonly usersService: UsersService, // Добавляем UsersService
+  ) { }
 
-  // Register a new user and return tokens
   async register(registerDto: RegisterDto): Promise<{ accessToken: string; refreshToken: string }> {
     const { email, password, fullName, avatar } = registerDto;
 
@@ -36,37 +37,9 @@ export class AuthService {
     });
     const savedUser = await this.userRepository.save(user);
 
-    // Generate tokens with full user object in payload
-    const payload = {
-      sub: savedUser.id,
-      email: savedUser.email,
-      user: {
-        id: savedUser.id,
-        email: savedUser.email,
-        fullName: savedUser.fullName,
-        createdAt: savedUser.createdAt.toISOString(),
-        updatedAt: savedUser.updatedAt.toISOString(),
-      },
-    };
-    const accessToken = this.jwtService.sign(payload, {
-      secret: process.env.JWT_ACCESS_SECRET,
-      expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
-    });
-    const refreshToken = this.jwtService.sign(payload, {
-      secret: process.env.JWT_REFRESH_SECRET,
-      expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
-    });
-
-    const accessTtl = this.getTtlInSeconds(process.env.JWT_ACCESS_EXPIRES_IN || '15m');
-    const refreshTtl = this.getTtlInSeconds(process.env.JWT_REFRESH_EXPIRES_IN || '7d');
-
-    await this.redisUtil.setToken(`access_token:${savedUser.id}`, accessToken, accessTtl);
-    await this.redisUtil.setToken(`refresh_token:${savedUser.id}`, refreshToken, refreshTtl);
-
-    return { accessToken, refreshToken };
+    return this.generateTokens(savedUser);
   }
 
-  // Login user and return JWT tokens
   async login(loginDto: LoginDto): Promise<{ accessToken: string; refreshToken: string }> {
     const { email, password } = loginDto;
 
@@ -80,7 +53,61 @@ export class AuthService {
       throw new UnauthorizedException('Неверные учетные данные');
     }
 
-    // Generate tokens with full user object in payload
+    return this.generateTokens(user);
+  }
+
+  async refreshTokens(user: { sub: string; email: string }): Promise<{ accessToken: string; refreshToken: string }> {
+    const foundUser = await this.userRepository.findOne({ where: { id: user.sub } });
+    if (!foundUser) {
+      throw new UnauthorizedException('Пользователь не найден');
+    }
+
+    return this.generateTokens(foundUser);
+  }
+
+  async logout(userId: string): Promise<void> {
+    await Promise.all([
+      this.redisUtil.deleteToken(`access_token:${userId}`),
+      this.redisUtil.deleteToken(`refresh_token:${userId}`),
+    ]);
+  }
+
+  async validateUser(userId: string): Promise<{ sub: string; email: string }> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new UnauthorizedException('Пользователь не найден');
+    }
+
+    const tokenExists = await this.redisUtil.tokenExists(`access_token:${userId}`);
+    if (!tokenExists) {
+      throw new UnauthorizedException('Токен недействителен или истек');
+    }
+
+    return { sub: user.id, email: user.email };
+  }
+
+  // Change password and return new tokens
+  async changePassword(userId: string, oldPassword: string, newPassword: string): Promise<{ accessToken: string; refreshToken: string }> {
+    const user = await this.usersService.findOneWithPassword(userId);
+
+    const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Неверный старый пароль');
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedNewPassword;
+    await this.userRepository.save(user);
+
+    // Invalidate old tokens
+    await this.logout(userId);
+
+    // Generate and return new tokens
+    return this.generateTokens(user);
+  }
+
+  // Helper method to generate tokens
+  private generateTokens(user: User): { accessToken: string; refreshToken: string } {
     const payload = {
       sub: user.id,
       email: user.email,
@@ -103,69 +130,10 @@ export class AuthService {
 
     const accessTtl = this.getTtlInSeconds(process.env.JWT_ACCESS_EXPIRES_IN || '15m');
     const refreshTtl = this.getTtlInSeconds(process.env.JWT_REFRESH_EXPIRES_IN || '7d');
-
-    await this.redisUtil.setToken(`access_token:${user.id}`, accessToken, accessTtl);
-    await this.redisUtil.setToken(`refresh_token:${user.id}`, refreshToken, refreshTtl);
+    this.redisUtil.setToken(`access_token:${user.id}`, accessToken, accessTtl);
+    this.redisUtil.setToken(`refresh_token:${user.id}`, refreshToken, refreshTtl);
 
     return { accessToken, refreshToken };
-  }
-
-  // Refresh JWT tokens using validated user
-  async refreshTokens(user: { sub: string; email: string }): Promise<{ accessToken: string; refreshToken: string }> {
-    const foundUser = await this.userRepository.findOne({ where: { id: user.sub } });
-    if (!foundUser) {
-      throw new UnauthorizedException('Пользователь не найден');
-    }
-
-    const payload = {
-      sub: user.sub,
-      email: user.email,
-      user: {
-        id: foundUser.id,
-        email: foundUser.email,
-        fullName: foundUser.fullName,
-        createdAt: foundUser.createdAt.toISOString(),
-        updatedAt: foundUser.updatedAt.toISOString(),
-      },
-    };
-    const newAccessToken = this.jwtService.sign(payload, {
-      secret: process.env.JWT_ACCESS_SECRET,
-      expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
-    });
-    const newRefreshToken = this.jwtService.sign(payload, {
-      secret: process.env.JWT_REFRESH_SECRET,
-      expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
-    });
-
-    const accessTtl = this.getTtlInSeconds(process.env.JWT_ACCESS_EXPIRES_IN || '15m');
-    const refreshTtl = this.getTtlInSeconds(process.env.JWT_REFRESH_EXPIRES_IN || '7d');
-    await this.redisUtil.setToken(`access_token:${user.sub}`, newAccessToken, accessTtl);
-    await this.redisUtil.setToken(`refresh_token:${user.sub}`, newRefreshToken, refreshTtl);
-
-    return { accessToken: newAccessToken, refreshToken: newRefreshToken };
-  }
-
-  // Logout user by removing tokens from Redis
-  async logout(userId: string): Promise<void> {
-    await Promise.all([
-      this.redisUtil.deleteToken(`access_token:${userId}`),
-      this.redisUtil.deleteToken(`refresh_token:${userId}`),
-    ]);
-  }
-
-  // Validate user for JwtStrategy and JwtRefreshStrategy
-  async validateUser(userId: string): Promise<{ sub: string; email: string }> {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
-    if (!user) {
-      throw new UnauthorizedException('Пользователь не найден');
-    }
-
-    const tokenExists = await this.redisUtil.tokenExists(`access_token:${userId}`);
-    if (!tokenExists) {
-      throw new UnauthorizedException('Токен недействителен или истек');
-    }
-
-    return { sub: user.id, email: user.email };
   }
 
   // Helper method to convert expiresIn to seconds
@@ -184,5 +152,32 @@ export class AuthService {
       default:
         return value;
     }
+  }
+
+  // src/modules/auth/auth.service.ts (фрагмент)
+  async loginWithGoogle(googleUser: { email: string; fullName: string; googleId: string }) {
+    let user = await this.userRepository.findOne({ where: { email: googleUser.email } });
+    if (!user) {
+      user = this.userRepository.create({
+        email: googleUser.email,
+        fullName: googleUser.fullName,
+        password: '', // Пароль не нужен для OAuth
+      });
+      await this.userRepository.save(user);
+    }
+    return this.generateTokens(user);
+  }
+
+  async loginWithGithub(githubUser: { email: string; fullName: string; githubId: string }) {
+    let user = await this.userRepository.findOne({ where: { email: githubUser.email } });
+    if (!user) {
+      user = this.userRepository.create({
+        email: githubUser.email,
+        fullName: githubUser.fullName,
+        password: '', // Пароль не нужен для OAuth
+      });
+      await this.userRepository.save(user);
+    }
+    return this.generateTokens(user);
   }
 }
