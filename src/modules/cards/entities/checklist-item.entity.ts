@@ -14,7 +14,10 @@ export class ChecklistItem extends BaseEntity {
   @Column({ default: false })
   completed!: boolean;
 
-  @ApiProperty({ description: 'Checklist the item belongs to', type: () => Checklist })
+  @ApiProperty({
+    description: 'Checklist the item belongs to',
+    type: () => Checklist,
+  })
   @ManyToOne(() => Checklist, (checklist) => checklist.items)
   checklist!: Checklist;
 }

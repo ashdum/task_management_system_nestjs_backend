@@ -26,7 +26,9 @@ export class CardsService {
   async create(createCardDto: CreateCardDto): Promise<Card> {
     const { columnId, memberIds, labels, ...cardData } = createCardDto;
 
-    const column = await this.columnRepository.findOne({ where: { id: columnId } });
+    const column = await this.columnRepository.findOne({
+      where: { id: columnId },
+    });
     if (!column) {
       throw new NotFoundException(`Колонка с ID ${columnId} не найдена`);
     }
@@ -35,7 +37,9 @@ export class CardsService {
     if (memberIds && memberIds.length > 0) {
       members = await this.userRepository.findByIds(memberIds);
       if (members.length !== memberIds.length) {
-        throw new NotFoundException('Один или несколько пользователей не найдены');
+        throw new NotFoundException(
+          'Один или несколько пользователей не найдены',
+        );
       }
     }
 
@@ -43,7 +47,9 @@ export class CardsService {
       ...cardData,
       column,
       members,
-      labels: labels ? labels.map((label) => this.labelRepository.create(label)) : [],
+      labels: labels
+        ? labels.map((label) => this.labelRepository.create(label))
+        : [],
     });
 
     return this.cardRepository.save(card);
@@ -53,7 +59,14 @@ export class CardsService {
   async findAllByColumn(columnId: string): Promise<Card[]> {
     return this.cardRepository.find({
       where: { column: { id: columnId } },
-      relations: ['members', 'labels', 'checklists', 'checklists.items', 'comments', 'attachments'],
+      relations: [
+        'members',
+        'labels',
+        'checklists',
+        'checklists.items',
+        'comments',
+        'attachments',
+      ],
     });
   }
 
@@ -61,7 +74,15 @@ export class CardsService {
   async findOne(id: string): Promise<Card> {
     const card = await this.cardRepository.findOne({
       where: { id },
-      relations: ['members', 'labels', 'checklists', 'checklists.items', 'comments', 'attachments', 'column'],
+      relations: [
+        'members',
+        'labels',
+        'checklists',
+        'checklists.items',
+        'comments',
+        'attachments',
+        'column',
+      ],
     });
     if (!card) {
       throw new NotFoundException(`Карточка с ID ${id} не найдена`);
@@ -76,7 +97,9 @@ export class CardsService {
     const { columnId, memberIds, labels, ...cardData } = updateCardDto;
 
     if (columnId) {
-      const column = await this.columnRepository.findOne({ where: { id: columnId } });
+      const column = await this.columnRepository.findOne({
+        where: { id: columnId },
+      });
       if (!column) {
         throw new NotFoundException(`Колонка с ID ${columnId} не найдена`);
       }
@@ -86,7 +109,9 @@ export class CardsService {
     if (memberIds) {
       const members = await this.userRepository.findByIds(memberIds);
       if (members.length !== memberIds.length) {
-        throw new NotFoundException('Один или несколько пользователей не найдены');
+        throw new NotFoundException(
+          'Один или несколько пользователей не найдены',
+        );
       }
       card.members = members;
     }

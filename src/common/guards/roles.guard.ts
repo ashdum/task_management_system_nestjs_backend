@@ -1,5 +1,10 @@
 // src/common/guards/roles.guard.ts
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DashboardUser } from '../../modules/dashboards/entities/dashboard-user.entity';
@@ -17,9 +22,9 @@ export class RolesGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const user = request.user; // Из JWT
-    if(!user){
-        return true;
-    }
+    /* if (!user) {
+      return true;
+    } */
     let dashboardId = request.params.id || request.body.dashboardId;
 
     if (request.params.id && !dashboardId) {
@@ -41,7 +46,9 @@ export class RolesGuard implements CanActivate {
     });
 
     if (!dashboardUser || dashboardUser.role !== 'admin') {
-      throw new ForbiddenException('Только администратор может выполнить это действие');
+      throw new ForbiddenException(
+        'Только администратор может выполнить это действие',
+      );
     }
 
     return true;

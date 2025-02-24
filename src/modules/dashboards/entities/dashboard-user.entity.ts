@@ -10,11 +10,17 @@ export class DashboardUser {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @ApiProperty({ description: 'User associated with the dashboard', type: () => User })
+  @ApiProperty({
+    description: 'User associated with the dashboard',
+    type: () => User,
+  })
   @ManyToOne(() => User, (user) => user.dashboardUsers)
   user!: User;
 
-  @ApiProperty({ description: 'Dashboard associated with the user', type: () => Dashboard })
+  @ApiProperty({
+    description: 'Dashboard associated with the user',
+    type: () => Dashboard,
+  })
   @ManyToOne(() => Dashboard, (dashboard) => dashboard.dashboardUsers)
   dashboard!: Dashboard;
 

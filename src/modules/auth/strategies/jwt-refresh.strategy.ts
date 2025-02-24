@@ -22,7 +22,10 @@ interface JwtPayload {
 }
 
 @Injectable()
-export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
+export class JwtRefreshStrategy extends PassportStrategy(
+  Strategy,
+  'jwt-refresh',
+) {
   constructor(
     private readonly authService: AuthService,
     private readonly redisUtil: RedisUtil,
@@ -36,7 +39,10 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
   }
 
   // Validate JWT payload and check refreshToken
-  async validate(req: Request, payload: JwtPayload): Promise<{ sub: string; email: string }> {
+  async validate(
+    req: Request,
+    payload: JwtPayload,
+  ): Promise<{ sub: string; email: string }> {
     // Извлекаем refreshToken из тела запроса
     const refreshToken: string = req.body.refreshToken;
     if (!refreshToken) {
@@ -45,13 +51,19 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
 
     const user = await this.authService.validateUser(payload.sub);
     if (!user) {
-      throw new UnauthorizedException('Пользователь не найден или токен недействителен');
+      throw new UnauthorizedException(
+        'Пользователь не найден или токен недействителен',
+      );
     }
 
     // Получаем текущий refreshToken из Redis
-    const storedRefreshToken = await this.redisUtil.getToken(`refresh_token:${payload.sub}`);
+    const storedRefreshToken = await this.redisUtil.getToken(
+      `refresh_token:${payload.sub}`,
+    );
     if (!storedRefreshToken || storedRefreshToken !== refreshToken) {
-      throw new UnauthorizedException('Refresh-токен недействителен или устарел');
+      throw new UnauthorizedException(
+        'Refresh-токен недействителен или устарел',
+      );
     }
 
     return {

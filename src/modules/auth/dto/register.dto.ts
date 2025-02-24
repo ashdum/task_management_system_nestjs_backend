@@ -1,7 +1,10 @@
 // src/modules/auth/dto/register.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsOptional } from 'class-validator';
-import { IsStrongPassword, IsValidFullName } from 'src/common/decorators/validation';
+import {
+  IsStrongPassword,
+  IsValidFullName,
+} from 'src/common/decorators/validation';
 
 export class RegisterDto {
   @ApiProperty({
@@ -12,14 +15,16 @@ export class RegisterDto {
   email!: string;
 
   @ApiProperty({
-    description: 'Пароль пользователя (минимум 8 символов, с заглавной буквой, строчной буквой, цифрой и спецсимволом)',
+    description:
+      'Пароль пользователя (минимум 8 символов, с заглавной буквой, строчной буквой, цифрой и спецсимволом)',
     example: 'Password123!',
   })
   @IsStrongPassword()
   password!: string;
 
   @ApiProperty({
-    description: 'Полное имя пользователя (2-50 символов, только буквы, пробелы, дефисы и апострофы)',
+    description:
+      'Полное имя пользователя (2-50 символов, только буквы, пробелы, дефисы и апострофы)',
     example: 'John Doe',
     required: false,
   })

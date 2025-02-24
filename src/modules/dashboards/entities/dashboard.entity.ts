@@ -15,7 +15,10 @@ export interface DashboardSettings {
 
 @Entity('dashboards')
 export class Dashboard extends BaseEntity {
-  @ApiProperty({ description: 'Title of the dashboard', example: 'My Project Dashboard' })
+  @ApiProperty({
+    description: 'Title of the dashboard',
+    example: 'My Project Dashboard',
+  })
   @Column()
   title!: string;
 
@@ -26,7 +29,10 @@ export class Dashboard extends BaseEntity {
   @Column('uuid', { array: true })
   ownerIds!: string[];
 
-  @ApiProperty({ description: 'Users associated with the dashboard', type: () => [DashboardUser] })
+  @ApiProperty({
+    description: 'Users associated with the dashboard',
+    type: () => [DashboardUser],
+  })
   @OneToMany(() => DashboardUser, (dashboardUser) => dashboardUser.dashboard)
   dashboardUsers!: DashboardUser[];
 
@@ -34,27 +40,47 @@ export class Dashboard extends BaseEntity {
   @OneToMany(() => ColumnEntity, (column) => column.dashboard)
   columns!: ColumnEntity[];
 
-  @ApiProperty({ description: 'Background color or image URL', example: '#FFFFFF', required: false })
+  @ApiProperty({
+    description: 'Background color or image URL',
+    example: '#FFFFFF',
+    required: false,
+  })
   @Column({ nullable: true })
   background?: string;
 
-  @ApiProperty({ description: 'Description of the dashboard', example: 'Dashboard for project management', required: false })
+  @ApiProperty({
+    description: 'Description of the dashboard',
+    example: 'Dashboard for project management',
+    required: false,
+  })
   @Column({ nullable: true })
   description?: string;
 
-  @ApiProperty({ description: 'Is the dashboard public?', example: false, required: false })
+  @ApiProperty({
+    description: 'Is the dashboard public?',
+    example: false,
+    required: false,
+  })
   @Column({ default: false })
   isPublic?: boolean;
 
   @ApiProperty({
     description: 'Dashboard settings',
-    example: { isPublic: false, allowComments: true, allowInvites: true, theme: 'light' },
+    example: {
+      isPublic: false,
+      allowComments: true,
+      allowInvites: true,
+      theme: 'light',
+    },
     required: false,
   })
   @Column({ type: 'json', nullable: true })
   settings?: DashboardSettings;
 
-  @ApiProperty({ description: 'List of invitations', type: () => [DashboardInvitation] })
+  @ApiProperty({
+    description: 'List of invitations',
+    type: () => [DashboardInvitation],
+  })
   @OneToMany(() => DashboardInvitation, (invitation) => invitation.dashboard)
   invitations!: DashboardInvitation[];
 }

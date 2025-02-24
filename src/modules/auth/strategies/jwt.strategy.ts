@@ -36,7 +36,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   // Validate JWT payload and check accessToken
-  async validate(req: Request, payload: JwtPayload): Promise<{ sub: string; email: string }> {
+  async validate(
+    req: Request,
+    payload: JwtPayload,
+  ): Promise<{ sub: string; email: string }> {
     // Извлекаем accessToken из заголовка Authorization
     const accessToken = req.headers.authorization?.replace('Bearer ', '');
     if (!accessToken) {
@@ -45,13 +48,19 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     const user = await this.authService.validateUser(payload.sub);
     if (!user) {
-      throw new UnauthorizedException('Пользователь не найден или токен недействителен');
+      throw new UnauthorizedException(
+        'Пользователь не найден или токен недействителен',
+      );
     }
 
     // Получаем текущий accessToken из Redis
-    const storedAccessToken = await this.redisUtil.getToken(`access_token:${payload.sub}`);
+    const storedAccessToken = await this.redisUtil.getToken(
+      `access_token:${payload.sub}`,
+    );
     if (!storedAccessToken || storedAccessToken !== accessToken) {
-      throw new UnauthorizedException('Access-токен недействителен или устарел');
+      throw new UnauthorizedException(
+        'Access-токен недействителен или устарел',
+      );
     }
 
     return {

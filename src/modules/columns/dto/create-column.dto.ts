@@ -18,7 +18,11 @@ export class CreateColumnDto {
   @IsString()
   dashboardId!: string;
 
-  @ApiProperty({ description: 'Is the column archived?', example: false, required: false })
+  @ApiProperty({
+    description: 'Is the column archived?',
+    example: false,
+    required: false,
+  })
   @IsOptional()
   is_archive?: boolean;
 }

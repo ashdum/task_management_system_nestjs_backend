@@ -1,10 +1,24 @@
 // src/modules/cards/cards.controller.ts
-import { Controller, Post, Get, Patch, Delete, Body, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { CardsService } from './cards.service';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { Card } from './entities/card.entity';
 
 @ApiTags('Cards')
@@ -50,7 +64,10 @@ export class CardsController {
   @ApiResponse({ status: 200, description: 'Карточка обновлена', type: Card })
   @ApiResponse({ status: 404, description: 'Карточка не найдена' })
   @ApiResponse({ status: 401, description: 'Не авторизован' })
-  update(@Param('id') id: string, @Body() updateCardDto: UpdateCardDto): Promise<Card> {
+  update(
+    @Param('id') id: string,
+    @Body() updateCardDto: UpdateCardDto,
+  ): Promise<Card> {
     return this.cardsService.update(id, updateCardDto);
   }
 

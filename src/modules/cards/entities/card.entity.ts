@@ -1,5 +1,12 @@
 // src/modules/cards/entities/card.entity.ts
-import { Column, Entity, ManyToOne, OneToMany, ManyToMany, JoinTable } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  ManyToMany,
+  JoinTable,
+} from 'typeorm';
 import { BaseEntity } from '../../../common/entities/base.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { ColumnEntity } from '../../columns/entities/column.entity';
@@ -19,7 +26,11 @@ export class Card extends BaseEntity {
   @Column()
   title!: string;
 
-  @ApiProperty({ description: 'Description of the card', example: 'Do this task', required: false })
+  @ApiProperty({
+    description: 'Description of the card',
+    example: 'Do this task',
+    required: false,
+  })
   @Column({ nullable: true })
   description?: string;
 
@@ -27,7 +38,10 @@ export class Card extends BaseEntity {
   @Column({ type: 'uuid' })
   columnId!: string;
 
-  @ApiProperty({ description: 'Members assigned to the card', type: () => [User] })
+  @ApiProperty({
+    description: 'Members assigned to the card',
+    type: () => [User],
+  })
   @ManyToMany(() => User, (user) => user.cards)
   @JoinTable()
   members!: User[];
@@ -36,7 +50,10 @@ export class Card extends BaseEntity {
   @OneToMany(() => Label, (label) => label.card)
   labels!: Label[];
 
-  @ApiProperty({ description: 'Checklists on the card', type: () => [Checklist] })
+  @ApiProperty({
+    description: 'Checklists on the card',
+    type: () => [Checklist],
+  })
   @OneToMany(() => Checklist, (checklist) => checklist.card)
   checklists!: Checklist[];
 
@@ -44,19 +61,33 @@ export class Card extends BaseEntity {
   @OneToMany(() => Comment, (comment) => comment.card)
   comments!: Comment[];
 
-  @ApiProperty({ description: 'Image URLs', example: ['https://example.com/img1.jpg'], required: false })
+  @ApiProperty({
+    description: 'Image URLs',
+    example: ['https://example.com/img1.jpg'],
+    required: false,
+  })
   @Column('simple-array', { nullable: true })
   images?: string[];
 
-  @ApiProperty({ description: 'Attachments on the card', type: () => [Attachment] })
+  @ApiProperty({
+    description: 'Attachments on the card',
+    type: () => [Attachment],
+  })
   @OneToMany(() => Attachment, (attachment) => attachment.card)
   attachments!: Attachment[];
 
-  @ApiProperty({ description: 'Due date of the card', example: '2025-03-01', required: false })
+  @ApiProperty({
+    description: 'Due date of the card',
+    example: '2025-03-01',
+    required: false,
+  })
   @Column({ nullable: true })
   dueDate?: string;
 
-  @ApiProperty({ description: 'Column the card belongs to', type: () => ColumnEntity })
+  @ApiProperty({
+    description: 'Column the card belongs to',
+    type: () => ColumnEntity,
+  })
   @ManyToOne(() => ColumnEntity, (column) => column.cards)
   column!: ColumnEntity;
 }

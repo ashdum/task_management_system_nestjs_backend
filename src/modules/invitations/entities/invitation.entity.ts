@@ -7,19 +7,31 @@ import { Dashboard } from '../../dashboards/entities/dashboard.entity';
 
 @Entity('dashboard_invitations')
 export class DashboardInvitation extends BaseEntity {
-  @ApiProperty({ description: 'ID of the dashboard', example: '123e4567-e89b-12d3-a456-426614174000' })
+  @ApiProperty({
+    description: 'ID of the dashboard',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+  })
   @Column({ type: 'uuid' })
   dashboardId!: string;
 
-  @ApiProperty({ description: 'ID of the inviter', example: '123e4567-e89b-12d3-a456-426614174000' })
+  @ApiProperty({
+    description: 'ID of the inviter',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+  })
   @Column({ type: 'uuid' })
   inviterId!: string;
 
-  @ApiProperty({ description: 'Email of the inviter', example: 'inviter@example.com' })
+  @ApiProperty({
+    description: 'Email of the inviter',
+    example: 'inviter@example.com',
+  })
   @Column()
   inviterEmail!: string;
 
-  @ApiProperty({ description: 'Email of the invitee', example: 'invitee@example.com' })
+  @ApiProperty({
+    description: 'Email of the invitee',
+    example: 'invitee@example.com',
+  })
   @Column()
   inviteeEmail!: string;
 

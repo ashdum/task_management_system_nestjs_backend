@@ -1,5 +1,11 @@
 // src/modules/cards/dto/create-card.dto.ts
-import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateCardDto {
@@ -13,7 +19,11 @@ export class CreateCardDto {
   @IsString()
   title!: string;
 
-  @ApiProperty({ description: 'Description of the card', example: 'Do this task', required: false })
+  @ApiProperty({
+    description: 'Description of the card',
+    example: 'Do this task',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   description?: string;
@@ -23,7 +33,11 @@ export class CreateCardDto {
   @IsString()
   columnId!: string;
 
-  @ApiProperty({ description: 'IDs of members assigned to the card', example: ['user1-id'], required: false })
+  @ApiProperty({
+    description: 'IDs of members assigned to the card',
+    example: ['user1-id'],
+    required: false,
+  })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
@@ -38,12 +52,20 @@ export class CreateCardDto {
   @IsArray()
   labels?: { text: string; color: string }[];
 
-  @ApiProperty({ description: 'Due date of the card', example: '2025-03-01', required: false })
+  @ApiProperty({
+    description: 'Due date of the card',
+    example: '2025-03-01',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   dueDate?: string;
 
-  @ApiProperty({ description: 'Image URLs', example: ['https://example.com/img1.jpg'], required: false })
+  @ApiProperty({
+    description: 'Image URLs',
+    example: ['https://example.com/img1.jpg'],
+    required: false,
+  })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })

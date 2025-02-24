@@ -18,7 +18,9 @@ export class ColumnsService {
 
   async create(createColumnDto: CreateColumnDto): Promise<ColumnEntity> {
     const { dashboardId, ...columnData } = createColumnDto;
-    const dashboard = await this.dashboardRepository.findOne({ where: { id: dashboardId } });
+    const dashboard = await this.dashboardRepository.findOne({
+      where: { id: dashboardId },
+    });
     if (!dashboard) {
       throw new NotFoundException(`Дашборд с ID ${dashboardId} не найден`);
     }
@@ -48,7 +50,10 @@ export class ColumnsService {
     return column;
   }
 
-  async update(id: string, updateColumnDto: UpdateColumnDto): Promise<ColumnEntity> {
+  async update(
+    id: string,
+    updateColumnDto: UpdateColumnDto,
+  ): Promise<ColumnEntity> {
     const column = await this.findOne(id);
     Object.assign(column, updateColumnDto);
     return this.columnRepository.save(column);

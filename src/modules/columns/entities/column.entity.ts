@@ -19,11 +19,18 @@ export class ColumnEntity extends BaseEntity {
   @OneToMany(() => Card, (card) => card.column)
   cards!: Card[];
 
-  @ApiProperty({ description: 'Is the column archived?', example: false, required: false })
+  @ApiProperty({
+    description: 'Is the column archived?',
+    example: false,
+    required: false,
+  })
   @Column({ default: false })
   is_archive?: boolean;
 
-  @ApiProperty({ description: 'Dashboard the column belongs to', type: () => Dashboard })
+  @ApiProperty({
+    description: 'Dashboard the column belongs to',
+    type: () => Dashboard,
+  })
   @ManyToOne(() => Dashboard, (dashboard) => dashboard.columns)
   dashboard!: Dashboard;
 }

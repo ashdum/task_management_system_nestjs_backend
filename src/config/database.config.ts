@@ -8,5 +8,6 @@ export const databaseConfig: TypeOrmModuleOptions = {
   password: process.env.POSTGRES_PASSWORD || 'mysecretpassword123',
   database: process.env.POSTGRES_DB || 'task_management_db',
   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-  synchronize: true, // В продакшене установите false
+  migrations: ['src/database/migrations/*.ts'],
+  synchronize: true,
 };

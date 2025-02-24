@@ -4,7 +4,7 @@ import { createClient } from 'redis';
 
 @Injectable()
 export class RedisUtil {
-private client: ReturnType<typeof createClient>;
+  private client: ReturnType<typeof createClient>;
 
   constructor() {
     this.client = createClient({

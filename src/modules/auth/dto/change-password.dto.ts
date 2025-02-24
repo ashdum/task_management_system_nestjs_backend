@@ -21,7 +21,8 @@ export class ChangePasswordDto {
   oldPassword!: string;
 
   @ApiProperty({
-    description: 'Новый пароль пользователя (минимум 8 символов, с заглавной буквой, строчной буквой, цифрой и спецсимволом)',
+    description:
+      'Новый пароль пользователя (минимум 8 символов, с заглавной буквой, строчной буквой, цифрой и спецсимволом)',
     example: 'NewPassword123!',
   })
   @IsNotEmpty({ message: 'Новый пароль обязателен' })

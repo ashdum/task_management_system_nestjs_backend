@@ -3,7 +3,6 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BullModule } from '@nestjs/bull';
-import { databaseConfig } from './config/database.config';
 import { redisConfig } from './config/redis.config';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
@@ -11,8 +10,8 @@ import { InvitationsModule } from './modules/invitations/invitations.module';
 import { DashboardsModule } from './modules/dashboards/dashboards.module';
 import { ColumnsModule } from './modules/columns/columns.module';
 import { CardsModule } from './modules/cards/cards.module';
-import { RolesGuard } from './common/guards/roles.guard';
 import { APP_GUARD } from '@nestjs/core';
+const { databaseConfig } = require('./config/database.config');
 
 @Module({
   imports: [
@@ -32,11 +31,11 @@ import { APP_GUARD } from '@nestjs/core';
     CardsModule,
   ],
   controllers: [],
-  providers: [
+ /*  providers: [
     {
       provide: APP_GUARD,
       useClass: RolesGuard, // Глобальный guard (опционально)
     },
-  ],
+  ], */
 })
 export class AppModule {}

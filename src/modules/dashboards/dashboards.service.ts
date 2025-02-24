@@ -19,10 +19,15 @@ export class DashboardsService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async create(createDashboardDto: CreateDashboardDto, userId: string): Promise<Dashboard> {
-    const user = await this.userRepository.findOneOrFail({ where: { id: userId } }).catch(() => {
-      throw new NotFoundException(`Пользователь с ID ${userId} не найден`);
-    });
+  async create(
+    createDashboardDto: CreateDashboardDto,
+    userId: string,
+  ): Promise<Dashboard> {
+    const user = await this.userRepository
+      .findOneOrFail({ where: { id: userId } })
+      .catch(() => {
+        throw new NotFoundException(`Пользователь с ID ${userId} не найден`);
+      });
 
     const dashboard = this.dashboardRepository.create({
       ...createDashboardDto,
@@ -45,7 +50,13 @@ export class DashboardsService {
 
   async findAll(): Promise<Dashboard[]> {
     return this.dashboardRepository.find({
-      relations: ['dashboardUsers', 'dashboardUsers.user', 'columns', 'columns.cards', 'invitations'],
+      relations: [
+        'dashboardUsers',
+        'dashboardUsers.user',
+        'columns',
+        'columns.cards',
+        'invitations',
+      ],
     });
   }
 
@@ -73,7 +84,10 @@ export class DashboardsService {
     }
   }
 
-  async update(id: string, updateDashboardDto: UpdateDashboardDto): Promise<Dashboard> {
+  async update(
+    id: string,
+    updateDashboardDto: UpdateDashboardDto,
+  ): Promise<Dashboard> {
     const dashboard = await this.findOne(id);
     Object.assign(dashboard, updateDashboardDto);
     return this.dashboardRepository.save(dashboard);

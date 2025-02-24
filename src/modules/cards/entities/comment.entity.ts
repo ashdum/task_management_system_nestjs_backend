@@ -11,11 +11,17 @@ export class Comment extends BaseEntity {
   @Column()
   text!: string;
 
-  @ApiProperty({ description: 'ID of the user who commented', example: 'user-id' })
+  @ApiProperty({
+    description: 'ID of the user who commented',
+    example: 'user-id',
+  })
   @Column({ type: 'uuid' })
   userId!: string;
 
-  @ApiProperty({ description: 'Email of the user who commented', example: 'user@example.com' })
+  @ApiProperty({
+    description: 'Email of the user who commented',
+    example: 'user@example.com',
+  })
   @Column()
   userEmail!: string;
 

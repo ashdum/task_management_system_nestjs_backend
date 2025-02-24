@@ -12,7 +12,9 @@ export class InvitationsService {
     private readonly invitationRepository: Repository<DashboardInvitation>,
   ) {}
 
-  async create(createInvitationDto: CreateInvitationDto): Promise<DashboardInvitation> {
+  async create(
+    createInvitationDto: CreateInvitationDto,
+  ): Promise<DashboardInvitation> {
     const invitation = this.invitationRepository.create({
       ...createInvitationDto,
       inviterId: 'current-user-id-from-jwt', // Здесь нужно получить ID текущего пользователя из JWT токена
