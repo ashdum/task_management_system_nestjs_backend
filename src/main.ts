@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import * as dotenv from 'dotenv';
+import Config from './config/config';
 
 // Загружаем .env файл до всего остального
 dotenv.config();
@@ -24,21 +25,12 @@ async function bootstrap() {
   });
 
   const config = new DocumentBuilder()
-    .setTitle('Task Management System API')
-    .setDescription('API документация для системы управления задачами')
-    .setVersion('1.0')
-    .addBearerAuth(
-      {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        name: 'JWT',
-        description: 'Введите JWT токен',
-        in: 'header',
-      },
-      'JWT-auth',
-    )
-    .build();
+  .setTitle('Task Management System API')
+  .setDescription('API документация для системы управления задачами')
+  .setVersion('1.0')
+  .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'JWT-auth')
+  .addServer('http://localhost:3011', 'Локальный сервер')
+  .build();
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document, {
@@ -46,6 +38,6 @@ async function bootstrap() {
     customSiteTitle: 'Task Management System API Docs',
   });
 
-  await app.listen(process.env.APP_PORT || 3000);
+  await app.listen(Config.port);
 }
 bootstrap();

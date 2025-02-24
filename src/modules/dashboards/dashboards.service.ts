@@ -1,7 +1,7 @@
 // src/modules/dashboards/dashboards.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm'; // Добавляем In из typeorm
 import { Dashboard } from './entities/dashboard.entity';
 import { CreateDashboardDto } from './dto/create-dashboard.dto';
 import { UpdateDashboardDto } from './dto/update-dashboard.dto';
@@ -48,8 +48,21 @@ export class DashboardsService {
     return savedDashboard;
   }
 
-  async findAll(): Promise<Dashboard[]> {
+  async findAll(userId: string): Promise<Dashboard[]> {
+    // Фильтруем дашборды по userId через DashboardUser
+    const dashboardUsers = await this.dashboardUserRepository.find({
+      where: { user: { id: userId } },
+      relations: ['dashboard'],
+    });
+
+    const dashboardIds = dashboardUsers.map((du) => du.dashboard.id);
+    if (dashboardIds.length === 0) {
+      return []; // Возвращаем пустой массив, если нет дашбордов
+    }
+
+    // Используем оператор In для фильтрации по массиву dashboardIds
     return this.dashboardRepository.find({
+      where: { id: In(dashboardIds) }, 
       relations: [
         'dashboardUsers',
         'dashboardUsers.user',
@@ -84,10 +97,7 @@ export class DashboardsService {
     }
   }
 
-  async update(
-    id: string,
-    updateDashboardDto: UpdateDashboardDto,
-  ): Promise<Dashboard> {
+  async update(id: string, updateDashboardDto: UpdateDashboardDto): Promise<Dashboard> {
     const dashboard = await this.findOne(id);
     Object.assign(dashboard, updateDashboardDto);
     return this.dashboardRepository.save(dashboard);
