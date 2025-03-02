@@ -41,7 +41,7 @@ Built with **NestJS**, it’s modular, testable, and efficient! Perfect for star
 
 1. **Clone the Repo**:
    ```bash
-   git clone https://github.com/your-username/task_management_system_nest_backend.git
+   git clone https://github.com/ashdum/task_management_system_nestjs_backend.git
    cd task_management_system_nest_backend
    ```
 2. **Install Dependencies**:
@@ -110,27 +110,29 @@ npm run test:e2e
 
 ## 📂 Project Structure
 
+Here’s how we keep everything neat and tidy:
+
 ```
 task_management_system_nest_backend/
-├── .docker/                # Docker configs
+├── .docker/                # Docker configs (Dockerfile, Nginx setup)
 ├── .env                    # Environment variables
-├── docker-compose.yml      # Docker setup
-├── src/                    # Source code
-│   ├── common/             # Shared utilities
-│   ├── config/             # Configuration files
-│   ├── database/           # Migrations and seeds
+├── docker-compose.yml      # Docker Compose setup for services
+├── src/                    # Source code 🎯
+│   ├── common/             # Shared utilities (guards, decorators, Redis utils)
+│   ├── config/             # Configuration files (DB, Redis, etc.)
+│   ├── database/           # Migrations and seeds for DB setup
 │   ├── modules/            # Feature modules
-│   │   ├── auth/           # Authentication
-│   │   ├── cards/          # Task cards
-│   │   ├── columns/        # Task columns
-│   │   ├── dashboards/     # Dashboards
-│   │   ├── invitations/    # Team invitations
-│   │   ├── users/          # User management
-│   ├── app.*               # Root app files
-│   └── main.ts             # Entry point
-├── test/                   # Test suites
+│   │   ├── auth/           # Authentication APIs (login, OAuth, etc.)
+│   │   ├── cards/          # Task cards with checklists, labels, and more
+│   │   ├── columns/        # Task columns for organization
+│   │   ├── dashboards/     # Dashboard management
+│   │   ├── invitations/    # Team collaboration invites
+│   │   └── users/          # User management APIs
+│   ├── app.*               # Root app files (controller, service, etc.)
+│   └── main.ts             # Entry point to start the app
+├── test/                   # Test suites 🧪
 ├── package.json            # Dependencies and scripts
-└── README.md               # Documentation
+└── README.md               # You’re reading it! 📚
 ```
 
 ---
@@ -162,19 +164,35 @@ We welcome contributions! To contribute:
 
 ---
 
-## 👨‍💻 About the Creator
+## 🌟 Why You’ll Love It
 
-This project was crafted with passion by **Ashot Dumikyan**, an experienced software engineer dedicated to building scalable, efficient systems.
-
-- **Role**: Team Lead, System Architect
-- **Contact**: ashotdumikyan@gmail.com | +37477556021
-- **Experience**: 8+ years in PHP, Node.js, TypeScript, system architecture.
-- **Expertise**: MySQL, PostgreSQL, MongoDB, Redis, microservices, and smart city solutions.
-- **Notable Projects**: Led development at Growfactor.ru (2024) and Masys Information Systems (2021-2024).
+- **Cute & Powerful**: A backend that’s as fun to use as it is robust.
+- **Team-Friendly**: Invite your crew and conquer tasks together.
+- **Developer Joy**: Clean code, full tests, and Swagger docs — what’s not to love?
 
 ---
 
-**Happy Task Managing!** 🎉
+## 🧀 Technologies & Libraries
 
-_Built with 💖 by Ashot Dumikyan_
+- **NestJS**: Modular and scalable framework.
+- **TypeORM**: Seamless database interactions with PostgreSQL.
+- **Redis**: Lightning-fast session management.
+- **JWT**: Secure authentication tokens.
+- **OAuth**: Google and GitHub login support.
+- **Docker**: Containerized PostgreSQL, Redis, and Nginx.
+- **Swagger**: API documentation.
+- **TypeScript**: Type-safe, reliable coding.
+- **Jest**: Unit and E2E testing.
+
+---
+
+## 👨‍💻 About the Creator
+
+**Ashot Dumikyan** — Team Lead & System Architect.
+
+- **Contact**: ashotdumikyan@gmail.com | +37477556021
+- **Experience**: 8+ years in PHP, Node.js, TypeScript.
+- **Expertise**: Databases, microservices, smart city solutions.
+
+Happy coding! ✨
 
