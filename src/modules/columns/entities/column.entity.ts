@@ -1,9 +1,8 @@
-// src/modules/columns/entities/column.entity.ts
-import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, Index } from 'typeorm';
 import { BaseEntity } from '../../../common/entities/base.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Dashboard } from '../../dashboards/entities/dashboard.entity';
-import { Card } from 'src/modules/cards/entities/card.entity';
+import { Card } from '../../cards/entities/card.entity';
 
 @Entity('columns')
 export class ColumnEntity extends BaseEntity {
@@ -16,7 +15,7 @@ export class ColumnEntity extends BaseEntity {
   order!: number;
 
   @ApiProperty({ description: 'Cards in the column', type: () => [Card] })
-  @OneToMany(() => Card, (card) => card.column)
+  @OneToMany(() => Card, (card) => card.column, { cascade: true })
   cards!: Card[];
 
   @ApiProperty({
@@ -32,5 +31,6 @@ export class ColumnEntity extends BaseEntity {
     type: () => Dashboard,
   })
   @ManyToOne(() => Dashboard, (dashboard) => dashboard.columns)
+  @Index('idx_columns_dashboardId') // Индекс сохраняем
   dashboard!: Dashboard;
 }

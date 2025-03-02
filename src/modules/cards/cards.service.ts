@@ -1,4 +1,3 @@
-// src/modules/cards/cards.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -22,7 +21,6 @@ export class CardsService {
     private readonly labelRepository: Repository<Label>,
   ) {}
 
-  // Create a new card
   async create(createCardDto: CreateCardDto): Promise<Card> {
     const { columnId, memberIds, labels, ...cardData } = createCardDto;
 
@@ -45,7 +43,7 @@ export class CardsService {
 
     const card = this.cardRepository.create({
       ...cardData,
-      column,
+      column, // Возвращаем свойство column
       members,
       labels: labels
         ? labels.map((label) => this.labelRepository.create(label))
@@ -55,7 +53,6 @@ export class CardsService {
     return this.cardRepository.save(card);
   }
 
-  // Get all cards for a column
   async findAllByColumn(columnId: string): Promise<Card[]> {
     return this.cardRepository.find({
       where: { column: { id: columnId } },
@@ -70,7 +67,6 @@ export class CardsService {
     });
   }
 
-  // Get a card by ID
   async findOne(id: string): Promise<Card> {
     const card = await this.cardRepository.findOne({
       where: { id },
@@ -90,7 +86,6 @@ export class CardsService {
     return card;
   }
 
-  // Update a card
   async update(id: string, updateCardDto: UpdateCardDto): Promise<Card> {
     const card = await this.findOne(id);
 
@@ -103,7 +98,7 @@ export class CardsService {
       if (!column) {
         throw new NotFoundException(`Колонка с ID ${columnId} не найдена`);
       }
-      card.column = column;
+      card.column = column; // Возвращаем свойство column
     }
 
     if (memberIds) {
@@ -124,7 +119,6 @@ export class CardsService {
     return this.cardRepository.save(card);
   }
 
-  // Delete a card
   async remove(id: string): Promise<void> {
     const card = await this.findOne(id);
     await this.cardRepository.remove(card);

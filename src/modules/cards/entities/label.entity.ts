@@ -1,5 +1,4 @@
-// src/modules/cards/entities/label.entity.ts
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Column, Entity, ManyToOne, Index } from 'typeorm';
 import { BaseEntity } from '../../../common/entities/base.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Card } from './card.entity';
@@ -16,5 +15,6 @@ export class Label extends BaseEntity {
 
   @ApiProperty({ description: 'Card the label belongs to', type: () => Card })
   @ManyToOne(() => Card, (card) => card.labels)
+  @Index('idx_labels_cardId') // Индекс сохраняем
   card!: Card;
 }

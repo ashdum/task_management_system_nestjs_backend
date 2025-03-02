@@ -1,4 +1,3 @@
-// src/modules/cards/entities/card.entity.ts
 import {
   Column,
   Entity,
@@ -6,14 +5,15 @@ import {
   OneToMany,
   ManyToMany,
   JoinTable,
+  Index,
 } from 'typeorm';
-import { BaseEntity } from '../../../common/entities/base.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import { BaseEntity } from '../../../common/entities/base.entity';
 import { ColumnEntity } from '../../columns/entities/column.entity';
 import { User } from '../../users/entities/user.entity';
 import { Label } from './label.entity';
 import { Checklist } from './checklist.entity';
-import { Comment } from './comment.entity';
+import { CardComment } from './comment.entity'; // Обновляем импорт
 import { Attachment } from './attachment.entity';
 
 @Entity('cards')
@@ -34,10 +34,6 @@ export class Card extends BaseEntity {
   @Column({ nullable: true })
   description?: string;
 
-  @ApiProperty({ description: 'ID of the column', example: 'column-id' })
-  @Column({ type: 'uuid' })
-  columnId!: string;
-
   @ApiProperty({
     description: 'Members assigned to the card',
     type: () => [User],
@@ -47,19 +43,22 @@ export class Card extends BaseEntity {
   members!: User[];
 
   @ApiProperty({ description: 'Labels on the card', type: () => [Label] })
-  @OneToMany(() => Label, (label) => label.card)
+  @OneToMany(() => Label, (label) => label.card, { cascade: true })
   labels!: Label[];
 
   @ApiProperty({
     description: 'Checklists on the card',
     type: () => [Checklist],
   })
-  @OneToMany(() => Checklist, (checklist) => checklist.card)
+  @OneToMany(() => Checklist, (checklist) => checklist.card, { cascade: true })
   checklists!: Checklist[];
 
-  @ApiProperty({ description: 'Comments on the card', type: () => [Comment] })
-  @OneToMany(() => Comment, (comment) => comment.card)
-  comments!: Comment[];
+  @ApiProperty({
+    description: 'Comments on the card',
+    type: () => [CardComment],
+  })
+  @OneToMany(() => CardComment, (comment) => comment.card, { cascade: true }) // Обновляем Comment → CardComment
+  comments!: CardComment[];
 
   @ApiProperty({
     description: 'Image URLs',
@@ -73,7 +72,9 @@ export class Card extends BaseEntity {
     description: 'Attachments on the card',
     type: () => [Attachment],
   })
-  @OneToMany(() => Attachment, (attachment) => attachment.card)
+  @OneToMany(() => Attachment, (attachment) => attachment.card, {
+    cascade: true,
+  })
   attachments!: Attachment[];
 
   @ApiProperty({
@@ -89,5 +90,6 @@ export class Card extends BaseEntity {
     type: () => ColumnEntity,
   })
   @ManyToOne(() => ColumnEntity, (column) => column.cards)
+  @Index('idx_cards_columnId')
   column!: ColumnEntity;
 }

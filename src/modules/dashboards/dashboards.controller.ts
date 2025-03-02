@@ -5,13 +5,13 @@ import {
   Get,
   Patch,
   Delete,
-  Body,
+  Body as RequestBody,
   Param,
   UseGuards,
   Req,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Request } from 'express';
+import { Request as ExpressRequest } from 'express';
 import { DashboardsService } from './dashboards.service';
 import { CreateDashboardDto } from './dto/create-dashboard.dto';
 import { UpdateDashboardDto } from './dto/update-dashboard.dto';
@@ -22,12 +22,12 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiBody,
 } from '@nestjs/swagger';
 import { Dashboard } from './entities/dashboard.entity';
 
-// Интерфейс для расширения Request с учетом user из JWT
-interface AuthenticatedRequest extends Request {
-  user: { sub: string; email: string }; // Структура, возвращаемая JwtStrategy
+interface AuthenticatedRequest extends ExpressRequest {
+  user: { sub: string; email: string };
 }
 
 @ApiTags('Dashboards')
@@ -37,73 +37,95 @@ export class DashboardsController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Создать новый дашборд' })
+  @ApiBody({
+    type: CreateDashboardDto,
+    examples: {
+      example1: {
+        value: {
+          title: 'My Dashboard',
+          ownerIds: ['123e4567-e89b-12d3-a456-426614174000'],
+          settings: {
+            isPublic: false,
+            allowComments: true,
+            allowInvites: true,
+            theme: 'light',
+          },
+        },
+      },
+    },
+  })
   @ApiResponse({ status: 201, description: 'Дашборд создан', type: Dashboard })
   @ApiResponse({ status: 401, description: 'Не авторизован' })
+  @ApiResponse({ status: 400, description: 'Неверный формат запроса' })
   create(
-    @Body() createDashboardDto: CreateDashboardDto,
+    @RequestBody() createDashboardDto: CreateDashboardDto,
     @Req() req: AuthenticatedRequest,
   ): Promise<Dashboard> {
     if (!req.user)
       throw new UnauthorizedException('Пользователь не аутентифицирован');
-    const userId = req.user.sub; // Теперь TypeScript знает, что user существует и содержит sub
-    return this.dashboardsService.create(createDashboardDto, userId);
+    return this.dashboardsService.create(createDashboardDto, req.user.sub);
   }
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Получить все дашборды текущего пользователя' })
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Получить дашборды текущего пользователя' })
   @ApiResponse({
     status: 200,
-    description: 'Список дашбордов',
+    description: 'Список дашбордов пользователя',
     type: [Dashboard],
   })
   @ApiResponse({ status: 401, description: 'Не авторизован' })
-  findAll(): Promise<Dashboard[]> {
-    return this.dashboardsService.findAll();
+  findAll(@Req() req: AuthenticatedRequest): Promise<Dashboard[]> {
+    return this.dashboardsService.findAll(req.user.sub);
   }
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Получить дашборд по ID' })
   @ApiResponse({ status: 200, description: 'Детали дашборда', type: Dashboard })
-  @ApiResponse({ status: 404, description: 'Дашборд не найден' })
   @ApiResponse({ status: 401, description: 'Не авторизован' })
+  @ApiResponse({ status: 404, description: 'Дашборд не найден' })
   findOne(@Param('id') id: string): Promise<Dashboard> {
     return this.dashboardsService.findOne(id);
   }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Обновить дашборд по ID' })
+  @ApiBody({ type: UpdateDashboardDto })
   @ApiResponse({
     status: 200,
     description: 'Дашборд обновлен',
     type: Dashboard,
   })
-  @ApiResponse({ status: 404, description: 'Дашборд не найден' })
   @ApiResponse({ status: 401, description: 'Не авторизован' })
+  @ApiResponse({ status: 403, description: 'Нет доступа к дашборду' })
+  @ApiResponse({ status: 404, description: 'Дашборд не найден' })
   update(
     @Param('id') id: string,
-    @Body() updateDashboardDto: UpdateDashboardDto,
+    @RequestBody() updateDashboardDto: UpdateDashboardDto,
   ): Promise<Dashboard> {
     return this.dashboardsService.update(id, updateDashboardDto);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({
     summary: 'Удалить дашборд по ID (только для администратора)',
   })
   @ApiResponse({ status: 200, description: 'Дашборд удален' })
-  @ApiResponse({ status: 403, description: 'Доступ запрещен' })
-  @ApiResponse({ status: 404, description: 'Дашборд не найден' })
   @ApiResponse({ status: 401, description: 'Не авторизован' })
+  @ApiResponse({
+    status: 403,
+    description: 'Только администратор может удалить дашборд',
+  })
+  @ApiResponse({ status: 404, description: 'Дашборд не найден' })
   remove(@Param('id') id: string): Promise<void> {
     return this.dashboardsService.remove(id);
   }

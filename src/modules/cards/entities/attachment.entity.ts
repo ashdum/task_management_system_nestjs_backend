@@ -1,5 +1,4 @@
-// src/modules/cards/entities/attachment.entity.ts
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Column, Entity, ManyToOne, Index } from 'typeorm';
 import { BaseEntity } from '../../../common/entities/base.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Card } from './card.entity';
@@ -39,5 +38,6 @@ export class Attachment extends BaseEntity {
     type: () => Card,
   })
   @ManyToOne(() => Card, (card) => card.attachments)
+  @Index('idx_attachments_cardId') // Индекс сохраняем
   card!: Card;
 }

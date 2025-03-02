@@ -1,5 +1,10 @@
-// src/modules/invitations/invitations.controller.ts
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body as RequestBody,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
 import { CreateInvitationDto } from './dto/create-invitation.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import {
@@ -7,9 +12,15 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiBody,
 } from '@nestjs/swagger';
 import { DashboardInvitation } from './entities/invitation.entity';
 import { InvitationsService } from './invitations.service';
+import { Request as ExpressRequest } from 'express';
+
+interface AuthenticatedRequest extends ExpressRequest {
+  user: { sub: string; email: string };
+}
 
 @ApiTags('Invitations')
 @Controller('invitations')
@@ -19,16 +30,24 @@ export class InvitationsController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Create a new dashboard invitation' })
+  @ApiOperation({ summary: 'Создать новое приглашение в дашборд' })
+  @ApiBody({ type: CreateInvitationDto })
   @ApiResponse({
     status: 201,
-    description: 'Invitation created',
+    description: 'Приглашение создано',
     type: DashboardInvitation,
   })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 400, description: 'Неверный формат запроса' })
+  @ApiResponse({ status: 401, description: 'Не авторизован' })
+  @ApiResponse({ status: 403, description: 'Нет доступа к дашборду' })
   create(
-    @Body() createInvitationDto: CreateInvitationDto,
+    @RequestBody() createInvitationDto: CreateInvitationDto, // Убираем псевдоним Body
+    @Req() req: AuthenticatedRequest,
   ): Promise<DashboardInvitation> {
-    return this.invitationsService.create(createInvitationDto);
+    return this.invitationsService.create(
+      createInvitationDto,
+      req.user.sub,
+      req.user.email,
+    );
   }
 }

@@ -1,5 +1,6 @@
 // src/common/utils/redis.util.ts
 import { Injectable } from '@nestjs/common';
+import config from 'config/config';
 import { createClient } from 'redis';
 
 @Injectable()
@@ -8,7 +9,7 @@ export class RedisUtil {
 
   constructor() {
     this.client = createClient({
-      url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+      url: `redis://${config.redis.host}:${config.redis.port}`,
     });
 
     this.client.on('error', (err) => console.error('Redis Client Error', err));

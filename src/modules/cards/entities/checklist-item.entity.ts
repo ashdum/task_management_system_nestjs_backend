@@ -1,5 +1,4 @@
-// src/modules/cards/entities/checklist-item.entity.ts
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Column, Entity, ManyToOne, Index } from 'typeorm';
 import { BaseEntity } from '../../../common/entities/base.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Checklist } from './checklist.entity';
@@ -19,5 +18,6 @@ export class ChecklistItem extends BaseEntity {
     type: () => Checklist,
   })
   @ManyToOne(() => Checklist, (checklist) => checklist.items)
+  @Index('idx_checklist_items_checklistId') // Индекс сохраняем
   checklist!: Checklist;
 }

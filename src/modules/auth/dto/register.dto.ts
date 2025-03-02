@@ -4,7 +4,7 @@ import { IsEmail, IsOptional } from 'class-validator';
 import {
   IsStrongPassword,
   IsValidFullName,
-} from 'src/common/decorators/validation';
+} from 'common/decorators/validation';
 
 export class RegisterDto {
   @ApiProperty({

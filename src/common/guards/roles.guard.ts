@@ -1,4 +1,3 @@
-// src/common/guards/roles.guard.ts
 import {
   Injectable,
   CanActivate,
@@ -9,6 +8,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DashboardUser } from '../../modules/dashboards/entities/dashboard-user.entity';
 import { ColumnEntity } from '../../modules/columns/entities/column.entity';
+import { Request as ExpressRequest } from 'express';
+
+// Определяем интерфейс с уникальным именем
+interface AuthRequest extends ExpressRequest {
+  user: { sub: string }; // Тип user из JWT payload
+}
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -20,12 +25,11 @@ export class RolesGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
-    const user = request.user; // Из JWT
-    /* if (!user) {
-      return true;
-    } */
-    let dashboardId = request.params.id || request.body.dashboardId;
+    const request = context.switchToHttp().getRequest<AuthRequest>(); // Используем AuthRequest
+    const user = request.user;
+    const params = request.params as { id?: string };
+    const body = request.body as { dashboardId?: string };
+    let dashboardId: string | undefined = params.id || body.dashboardId; // Явный тип
 
     if (request.params.id && !dashboardId) {
       const column = await this.columnRepository.findOne({

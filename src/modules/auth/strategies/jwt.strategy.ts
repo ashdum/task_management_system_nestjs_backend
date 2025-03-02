@@ -4,7 +4,8 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthService } from '../auth.service';
 import { RedisUtil } from '../../../common/utils/redis.util';
-import { Request } from 'express';
+import { Request as ExpressRequest } from 'express';
+import config from 'config/config';
 
 // Интерфейс для payload токена
 interface JwtPayload {
@@ -30,14 +31,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_ACCESS_SECRET || 'default_secret_key',
+      secretOrKey: config.jwt.accessSecret,
       passReqToCallback: true, // Передаем объект req в validate
     });
   }
 
   // Validate JWT payload and check accessToken
   async validate(
-    req: Request,
+    req: ExpressRequest,
     payload: JwtPayload,
   ): Promise<{ sub: string; email: string }> {
     // Извлекаем accessToken из заголовка Authorization

@@ -12,7 +12,7 @@ import {
 export class IsStrongPasswordConstraint
   implements ValidatorConstraintInterface
 {
-  validate(password: string, args: ValidationArguments) {
+  validate(password: string) {
     const passwordRegex =
       /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}$/;
     return typeof password === 'string' && passwordRegex.test(password);
@@ -35,7 +35,7 @@ export class IsStrongPasswordConstraint
 }
 
 export function IsStrongPassword(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       target: object.constructor,
       propertyName: propertyName,
@@ -49,7 +49,7 @@ export function IsStrongPassword(validationOptions?: ValidationOptions) {
 // Валидатор для полного имени
 @ValidatorConstraint({ name: 'isValidFullName', async: false })
 export class IsValidFullNameConstraint implements ValidatorConstraintInterface {
-  validate(fullName: string, args: ValidationArguments) {
+  validate(fullName: string) {
     const fullNameRegex = /^[a-zA-Z\s'-]+$/;
     return (
       typeof fullName === 'string' &&
@@ -72,7 +72,7 @@ export class IsValidFullNameConstraint implements ValidatorConstraintInterface {
 }
 
 export function IsValidFullName(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       target: object.constructor,
       propertyName: propertyName,

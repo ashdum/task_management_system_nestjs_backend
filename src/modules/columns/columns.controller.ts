@@ -5,7 +5,7 @@ import {
   Get,
   Patch,
   Delete,
-  Body,
+  Body as RequestBody,
   Param,
   UseGuards,
 } from '@nestjs/common';
@@ -19,6 +19,7 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiBody,
 } from '@nestjs/swagger';
 import { ColumnEntity } from './entities/column.entity';
 
@@ -31,13 +32,18 @@ export class ColumnsController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Создать новую колонку' })
+  @ApiBody({ type: CreateColumnDto })
   @ApiResponse({
     status: 201,
     description: 'Колонка создана',
     type: ColumnEntity,
   })
+  @ApiResponse({ status: 400, description: 'Неверный формат запроса' })
   @ApiResponse({ status: 401, description: 'Не авторизован' })
-  create(@Body() createColumnDto: CreateColumnDto): Promise<ColumnEntity> {
+  @ApiResponse({ status: 403, description: 'Нет доступа к дашборду' })
+  create(
+    @RequestBody() createColumnDto: CreateColumnDto,
+  ): Promise<ColumnEntity> {
     return this.columnsService.create(createColumnDto);
   }
 
@@ -51,6 +57,7 @@ export class ColumnsController {
     type: [ColumnEntity],
   })
   @ApiResponse({ status: 401, description: 'Не авторизован' })
+  @ApiResponse({ status: 404, description: 'Дашборд не найден' })
   findAllByDashboard(
     @Param('dashboardId') dashboardId: string,
   ): Promise<ColumnEntity[]> {
@@ -66,8 +73,8 @@ export class ColumnsController {
     description: 'Детали колонки',
     type: ColumnEntity,
   })
-  @ApiResponse({ status: 404, description: 'Колонка не найдена' })
   @ApiResponse({ status: 401, description: 'Не авторизован' })
+  @ApiResponse({ status: 404, description: 'Колонка не найдена' })
   findOne(@Param('id') id: string): Promise<ColumnEntity> {
     return this.columnsService.findOne(id);
   }
@@ -76,16 +83,18 @@ export class ColumnsController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Обновить колонку по ID' })
+  @ApiBody({ type: UpdateColumnDto })
   @ApiResponse({
     status: 200,
     description: 'Колонка обновлена',
     type: ColumnEntity,
   })
-  @ApiResponse({ status: 404, description: 'Колонка не найдена' })
   @ApiResponse({ status: 401, description: 'Не авторизован' })
+  @ApiResponse({ status: 403, description: 'Нет доступа к колонке' })
+  @ApiResponse({ status: 404, description: 'Колонка не найдена' })
   update(
     @Param('id') id: string,
-    @Body() updateColumnDto: UpdateColumnDto,
+    @RequestBody() updateColumnDto: UpdateColumnDto,
   ): Promise<ColumnEntity> {
     return this.columnsService.update(id, updateColumnDto);
   }
@@ -97,9 +106,12 @@ export class ColumnsController {
     summary: 'Удалить колонку по ID (только для администратора)',
   })
   @ApiResponse({ status: 200, description: 'Колонка удалена' })
-  @ApiResponse({ status: 403, description: 'Доступ запрещен' })
-  @ApiResponse({ status: 404, description: 'Колонка не найдена' })
   @ApiResponse({ status: 401, description: 'Не авторизован' })
+  @ApiResponse({
+    status: 403,
+    description: 'Только администратор может удалить колонку',
+  })
+  @ApiResponse({ status: 404, description: 'Колонка не найдена' })
   remove(@Param('id') id: string): Promise<void> {
     return this.columnsService.remove(id);
   }

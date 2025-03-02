@@ -1,3 +1,4 @@
+import 'reflect-metadata'; // Добавляем в начало файла
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
@@ -25,12 +26,22 @@ async function bootstrap() {
   });
 
   const config = new DocumentBuilder()
-  .setTitle('Task Management System API')
-  .setDescription('API документация для системы управления задачами')
-  .setVersion('1.0')
-  .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'JWT-auth')
-  .addServer('http://localhost:3011', 'Локальный сервер')
-  .build();
+    .setTitle('Task Management System API')
+    .setDescription('API документация для системы управления задачами')
+    .setVersion('1.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Введите JWT токен',
+        in: 'header',
+      },
+      'JWT-auth',
+    )
+    .addServer('http://localhost:3011', 'Локальный сервер')
+    .build();
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document, {

@@ -1,5 +1,4 @@
-// src/modules/cards/entities/checklist.entity.ts
-import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, Index } from 'typeorm';
 import { BaseEntity } from '../../../common/entities/base.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Card } from './card.entity';
@@ -18,7 +17,7 @@ export class Checklist extends BaseEntity {
     description: 'Items in the checklist',
     type: () => [ChecklistItem],
   })
-  @OneToMany(() => ChecklistItem, (item) => item.checklist)
+  @OneToMany(() => ChecklistItem, (item) => item.checklist, { cascade: true })
   items!: ChecklistItem[];
 
   @ApiProperty({
@@ -26,5 +25,6 @@ export class Checklist extends BaseEntity {
     type: () => Card,
   })
   @ManyToOne(() => Card, (card) => card.checklists)
+  @Index('idx_checklists_cardId') // Индекс сохраняем
   card!: Card;
 }

@@ -1,82 +1,90 @@
-// src/modules/users/entities/user.entity.ts
-import {
-  Column,
-  Entity,
-  ManyToMany,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  Index,
-} from 'typeorm';
+import { Column, Entity, ManyToMany, OneToMany, Index } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { BaseEntity } from '../../../common/entities/base.entity';
-import { DashboardInvitation } from 'src/modules/invitations/entities/invitation.entity';
-import { Card } from 'src/modules/cards/entities/card.entity';
-import { DashboardUser } from 'src/modules/dashboards/entities/dashboard-user.entity';
+import { Card } from '../../cards/entities/card.entity';
+import { DashboardInvitation } from '../../invitations/entities/invitation.entity';
+import { DashboardUser } from '../../dashboards/entities/dashboard-user.entity';
 
 @Entity('users')
 @Index('idx_user_email', ['email'])
 @Index('idx_user_provider_providerId', ['provider', 'providerId'], {
   unique: true,
-}) // Уникальный индекс для provider + providerId
+})
 export class User extends BaseEntity {
+  @ApiProperty({
+    description: 'Email пользователя',
+    example: 'user@example.com',
+  })
   @Column({ unique: true, nullable: false })
-  @ApiProperty({ description: 'Email пользователя' })
   email!: string;
 
+  @ApiProperty({
+    description: 'Полное имя пользователя',
+    example: 'John Doe',
+    required: false,
+  })
   @Column({ nullable: true })
-  @ApiProperty({ description: 'Полное имя пользователя' })
   fullName?: string;
 
-  @Column({ nullable: true })
   @ApiProperty({
-    description: 'URL аватара пользователя (может быть из Google/GitHub)',
+    description: 'URL аватара пользователя',
+    example: 'https://example.com/avatar.jpg',
+    required: false,
   })
+  @Column({ nullable: true })
   avatar?: string;
 
   @ApiProperty({
-    description: 'Хешированный пароль пользователя (не возвращается в ответах)',
+    description: 'Хешированный пароль (не возвращается)',
     required: false,
   })
   @Column({ nullable: false, select: false })
   password!: string;
 
-  @Column({ default: 'user', enum: ['user', 'admin'] })
   @ApiProperty({
     description: 'Роль пользователя',
     enum: ['user', 'admin'],
     default: 'user',
   })
-  role!: string;
+  @Column({ type: 'enum', enum: ['user', 'admin'], default: 'user' })
+  role!: 'user' | 'admin';
 
+  @ApiProperty({
+    description: 'Провайдер авторизации',
+    enum: ['google', 'github', null],
+    required: false,
+  })
   @Column({
     type: 'enum',
     enum: ['google', 'github'],
     nullable: true,
     default: null,
   })
-  @ApiProperty({
-    description:
-      'Провайдер авторизации (например, "google", "github", или null для email/password)',
-    enum: ['google', 'github', null],
-  })
   provider?: 'google' | 'github' | null;
 
-  @Column({ nullable: true, default: null })
   @ApiProperty({
-    description:
-      'Идентификатор пользователя у провайдера (Google или GitHub ID)',
+    description: 'Идентификатор провайдера',
+    example: 'google-id-123',
+    required: false,
   })
+  @Column({ nullable: true, default: null })
   providerId?: string;
 
+  @ApiProperty({ description: 'Карточки пользователя', type: () => [Card] })
+  @ManyToMany(() => Card, (card) => card.members)
+  cards!: Card[];
+
+  @ApiProperty({
+    description: 'Отправленные приглашения',
+    type: () => [DashboardInvitation],
+  })
   @OneToMany(() => DashboardInvitation, (invitation) => invitation.inviter)
-  @ApiProperty({ description: 'Отправленные приглашения пользователя' })
   sentInvitations!: DashboardInvitation[];
 
+  @ApiProperty({
+    description: 'Связи с дашбордами',
+    type: () => [DashboardUser],
+  })
   @OneToMany(() => DashboardUser, (dashboardUser) => dashboardUser.user)
-  @ApiProperty({ description: 'Связи пользователя с дашбордами' })
   dashboardUsers!: DashboardUser[];
-
-  @ManyToMany(() => Card, (card) => card.members)
-  @ApiProperty({ description: 'Карточки, к которым пользователь имеет доступ' })
-  cards!: Card[];
 }

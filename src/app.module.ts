@@ -1,4 +1,3 @@
-// src/app.module.ts
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -10,8 +9,14 @@ import { InvitationsModule } from './modules/invitations/invitations.module';
 import { DashboardsModule } from './modules/dashboards/dashboards.module';
 import { ColumnsModule } from './modules/columns/columns.module';
 import { CardsModule } from './modules/cards/cards.module';
-import { APP_GUARD } from '@nestjs/core';
-const { databaseConfig } = require('./config/database.config');
+import { databaseConfig } from './config/database.config';
+
+console.log(
+  'Database Config Entities:',
+  databaseConfig.entities
+    ? (databaseConfig.entities as Function[]).map((e) => e.name)
+    : 'Entities are undefined',
+);
 
 @Module({
   imports: [
@@ -31,11 +36,5 @@ const { databaseConfig } = require('./config/database.config');
     CardsModule,
   ],
   controllers: [],
- /*  providers: [
-    {
-      provide: APP_GUARD,
-      useClass: RolesGuard, // Глобальный guard (опционально)
-    },
-  ], */
 })
 export class AppModule {}

@@ -1,7 +1,6 @@
-// src/modules/dashboards/dashboards.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm'; // Добавляем In из typeorm
+import { Repository, In } from 'typeorm';
 import { Dashboard } from './entities/dashboard.entity';
 import { CreateDashboardDto } from './dto/create-dashboard.dto';
 import { UpdateDashboardDto } from './dto/update-dashboard.dto';
@@ -17,7 +16,7 @@ export class DashboardsService {
     private readonly dashboardUserRepository: Repository<DashboardUser>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-  ) {}
+  ) { }
 
   async create(
     createDashboardDto: CreateDashboardDto,
@@ -49,7 +48,6 @@ export class DashboardsService {
   }
 
   async findAll(userId: string): Promise<Dashboard[]> {
-    // Фильтруем дашборды по userId через DashboardUser
     const dashboardUsers = await this.dashboardUserRepository.find({
       where: { user: { id: userId } },
       relations: ['dashboard'],
@@ -57,19 +55,12 @@ export class DashboardsService {
 
     const dashboardIds = dashboardUsers.map((du) => du.dashboard.id);
     if (dashboardIds.length === 0) {
-      return []; // Возвращаем пустой массив, если нет дашбордов
+      return [];
     }
 
-    // Используем оператор In для фильтрации по массиву dashboardIds
     return this.dashboardRepository.find({
-      where: { id: In(dashboardIds) }, 
-      relations: [
-        'dashboardUsers',
-        'dashboardUsers.user',
-        'columns',
-        'columns.cards',
-        'invitations',
-      ],
+      where: { id: In(dashboardIds) },
+      relations: ['dashboardUsers', 'columns', 'columns.cards', 'invitations'],
     });
   }
 
@@ -79,7 +70,6 @@ export class DashboardsService {
         where: { id },
         relations: [
           'dashboardUsers',
-          'dashboardUsers.user',
           'columns',
           'columns.cards',
           'columns.cards.members',
@@ -92,12 +82,15 @@ export class DashboardsService {
         ],
       });
       return dashboard;
-    } catch (error) {
+    } catch {
       throw new NotFoundException(`Дашборд с ID ${id} не найден`);
     }
   }
 
-  async update(id: string, updateDashboardDto: UpdateDashboardDto): Promise<Dashboard> {
+  async update(
+    id: string,
+    updateDashboardDto: UpdateDashboardDto,
+  ): Promise<Dashboard> {
     const dashboard = await this.findOne(id);
     Object.assign(dashboard, updateDashboardDto);
     return this.dashboardRepository.save(dashboard);
@@ -105,6 +98,11 @@ export class DashboardsService {
 
   async remove(id: string): Promise<void> {
     const dashboard = await this.findOne(id);
+
+    // Удаляем все связанные записи из dashboard_users
+    await this.dashboardUserRepository.delete({ dashboard: { id } });
+
+    // Удаляем сам дашборд
     await this.dashboardRepository.remove(dashboard);
   }
 }

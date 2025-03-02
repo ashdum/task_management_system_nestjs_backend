@@ -1,5 +1,7 @@
+import config from './config';
+
 // redis.config.ts
 export const redisConfig = {
-  host: process.env.REDIS_HOST || 'redis',
-  port: parseInt(process.env.REDIS_PORT || '6379', 10),
+  host: config.redis.host,
+  port: config.redis.port,
 };

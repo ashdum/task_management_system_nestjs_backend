@@ -1,4 +1,3 @@
-// src/modules/columns/columns.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -27,7 +26,7 @@ export class ColumnsService {
 
     const column = this.columnRepository.create({
       ...columnData,
-      dashboard,
+      dashboard, // Возвращаем свойство dashboard
     });
     return this.columnRepository.save(column);
   }

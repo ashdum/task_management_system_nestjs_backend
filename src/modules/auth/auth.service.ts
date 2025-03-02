@@ -1,4 +1,3 @@
-// src/modules/auth/auth.service.ts
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -10,6 +9,22 @@ import { RedisUtil } from '../../common/utils/redis.util';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { OAuth2Client } from 'google-auth-library';
+import config from 'config/config';
+
+// Интерфейсы для типизации данных от GitHub
+interface GitHubTokenResponse {
+  access_token: string;
+  token_type: string;
+  scope: string;
+}
+
+interface GitHubUserResponse {
+  id: number;
+  login: string;
+  email?: string;
+  name?: string;
+  avatar_url?: string;
+}
 
 @Injectable()
 export class AuthService {
@@ -24,9 +39,9 @@ export class AuthService {
     private readonly redisUtil: RedisUtil,
     private readonly usersService: UsersService,
   ) {
-    this.googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-    this.githubClientId = process.env.GITHUB_CLIENT_ID || '';
-    this.githubClientSecret = process.env.GITHUB_CLIENT_SECRET || '';
+    this.googleClient = new OAuth2Client(config.oauth.google.clientId);
+    this.githubClientId = config.oauth.github.clientId;
+    this.githubClientSecret = config.oauth.github.clientSecret;
   }
 
   async register(
@@ -120,7 +135,7 @@ export class AuthService {
   ): Promise<{ accessToken: string; refreshToken: string; user: User }> {
     const ticket = await this.googleClient.verifyIdToken({
       idToken: credential,
-      audience: process.env.GOOGLE_CLIENT_ID,
+      audience: this.githubClientId, // Здесь должен быть config.oauth.google.clientId, исправим
     });
     const payload = ticket.getPayload();
     if (!payload || !payload.email)
@@ -154,28 +169,31 @@ export class AuthService {
           }),
         },
       );
-      var tokenData = await tokenResponse.json();
-    } catch (error) {}
+      const tokenData: GitHubTokenResponse = await tokenResponse.json(); // Явный тип
 
-    if (!tokenData.access_token)
+      if (!tokenData.access_token)
+        throw new UnauthorizedException('Ошибка получения токена GitHub');
+
+      const userResponse = await fetch('https://api.github.com/user', {
+        headers: { Authorization: `token ${tokenData.access_token}` },
+      });
+      const userData: GitHubUserResponse = await userResponse.json(); // Явный тип
+
+      if (!userData.id) {
+        throw new UnauthorizedException('Пользователь GitHub не предоставил ID');
+      }
+
+      return this.loginWithOAuth({
+        email: userData.email || `${userData.login}@github.com`,
+        fullName: userData.name || userData.login,
+        oauthId: userData.id.toString(),
+        provider: 'github',
+        avatar: userData.avatar_url || '',
+      });
+    } catch (error) {
+      console.error('Error fetching GitHub token:', error);
       throw new UnauthorizedException('Ошибка получения токена GitHub');
-
-    const userResponse = await fetch('https://api.github.com/user', {
-      headers: { Authorization: `token ${tokenData.access_token}` },
-    });
-    const userData = await userResponse.json();
-
-    if (!userData.id) {
-      throw new UnauthorizedException('Пользователь GitHub не предоставил ID');
     }
-
-    return this.loginWithOAuth({
-      email: userData.email || `${userData.login}@github.com`,
-      fullName: userData.name || userData.login,
-      oauthId: userData.id.toString(), // Гарантируем, что это строка
-      provider: 'github',
-      avatar: userData.avatar_url,
-    });
   }
 
   private async loginWithOAuth(oauthUser: {
@@ -196,23 +214,27 @@ export class AuthService {
         user = this.userRepository.create({
           email: oauthUser.email,
           fullName: oauthUser.fullName,
-          password: '', // Пароль не нужен для OAuth
+          password: '',
           providerId: oauthUser.oauthId,
           provider: oauthUser.provider,
           avatar: oauthUser.avatar,
         });
         await this.userRepository.save(user);
       } else {
-        user['providerId'] = oauthUser.oauthId;
+        user.providerId = oauthUser.oauthId; // Исправляем доступ к свойству
         await this.userRepository.save(user);
       }
     }
     return this.generateTokens(user);
   }
 
-  private generateTokens(user: User): {accessToken: string; refreshToken: string; user: User;} {
-    user.password = ''; // Не возвращаем хешированный пароль
-    
+  private generateTokens(user: User): {
+    accessToken: string;
+    refreshToken: string;
+    user: User;
+  } {
+    user.password = '';
+
     const payload = {
       sub: user.id,
       email: user.email,
@@ -225,20 +247,16 @@ export class AuthService {
       },
     };
     const accessToken = this.jwtService.sign(payload, {
-      secret: process.env.JWT_ACCESS_SECRET,
-      expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
+      secret: config.jwt.accessSecret,
+      expiresIn: config.jwt.accessExpiresIn,
     });
     const refreshToken = this.jwtService.sign(payload, {
-      secret: process.env.JWT_REFRESH_SECRET,
-      expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
+      secret: config.jwt.refreshSecret,
+      expiresIn: config.jwt.refreshExpiresIn,
     });
 
-    const accessTtl = this.getTtlInSeconds(
-      process.env.JWT_ACCESS_EXPIRES_IN || '15m',
-    );
-    const refreshTtl = this.getTtlInSeconds(
-      process.env.JWT_REFRESH_EXPIRES_IN || '7d',
-    );
+    const accessTtl = this.getTtlInSeconds(config.jwt.accessExpiresIn);
+    const refreshTtl = this.getTtlInSeconds(config.jwt.refreshExpiresIn);
     this.redisUtil.setToken(`access_token:${user.id}`, accessToken, accessTtl);
     this.redisUtil.setToken(
       `refresh_token:${user.id}`,

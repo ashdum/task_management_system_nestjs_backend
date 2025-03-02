@@ -1,5 +1,10 @@
-// src/modules/dashboards/entities/dashboard-user.entity.ts
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  Index,
+} from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Dashboard } from './dashboard.entity';
 import { User } from '../../users/entities/user.entity';
@@ -15,6 +20,7 @@ export class DashboardUser {
     type: () => User,
   })
   @ManyToOne(() => User, (user) => user.dashboardUsers)
+  @Index('idx_dashboard_users_userId') // Индекс сохраняем
   user!: User;
 
   @ApiProperty({
@@ -22,6 +28,7 @@ export class DashboardUser {
     type: () => Dashboard,
   })
   @ManyToOne(() => Dashboard, (dashboard) => dashboard.dashboardUsers)
+  @Index('idx_dashboard_users_dashboardId') // Индекс сохраняем
   dashboard!: Dashboard;
 
   @ApiProperty({
@@ -29,6 +36,6 @@ export class DashboardUser {
     example: 'admin',
     enum: ['user', 'admin'],
   })
-  @Column({ enum: ['user', 'admin'], default: 'user' })
-  role!: string;
+  @Column({ type: 'enum', enum: ['user', 'admin'], default: 'user' })
+  role!: 'user' | 'admin';
 }

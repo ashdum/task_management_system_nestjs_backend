@@ -1,10 +1,9 @@
-// src/modules/dashboards/entities/dashboard.entity.ts
-import { Column, Entity, OneToMany } from 'typeorm';
+import { Column, Entity, OneToMany, Index } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
+import { BaseEntity } from '../../../common/entities/base.entity';
 import { ColumnEntity } from '../../columns/entities/column.entity';
 import { DashboardInvitation } from '../../invitations/entities/invitation.entity';
 import { DashboardUser } from './dashboard-user.entity';
-import { BaseEntity } from 'src/common/entities/base.entity';
 
 export interface DashboardSettings {
   isPublic: boolean;
@@ -27,17 +26,22 @@ export class Dashboard extends BaseEntity {
     example: ['123e4567-e89b-12d3-a456-426614174000'],
   })
   @Column('uuid', { array: true })
+  @Index('idx_dashboards_ownerIds')
   ownerIds!: string[];
 
   @ApiProperty({
     description: 'Users associated with the dashboard',
     type: () => [DashboardUser],
   })
-  @OneToMany(() => DashboardUser, (dashboardUser) => dashboardUser.dashboard)
+  @OneToMany(() => DashboardUser, (dashboardUser) => dashboardUser.dashboard, {
+    cascade: true,
+  })
   dashboardUsers!: DashboardUser[];
 
   @ApiProperty({ description: 'List of columns', type: () => [ColumnEntity] })
-  @OneToMany(() => ColumnEntity, (column) => column.dashboard)
+  @OneToMany(() => ColumnEntity, (column) => column.dashboard, {
+    cascade: true,
+  })
   columns!: ColumnEntity[];
 
   @ApiProperty({
@@ -81,6 +85,8 @@ export class Dashboard extends BaseEntity {
     description: 'List of invitations',
     type: () => [DashboardInvitation],
   })
-  @OneToMany(() => DashboardInvitation, (invitation) => invitation.dashboard)
+  @OneToMany(() => DashboardInvitation, (invitation) => invitation.dashboard, {
+    cascade: true,
+  })
   invitations!: DashboardInvitation[];
 }

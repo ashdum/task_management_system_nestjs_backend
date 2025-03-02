@@ -4,7 +4,8 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthService } from '../auth.service';
 import { RedisUtil } from '../../../common/utils/redis.util';
-import { Request } from 'express';
+import { Request as ExpressRequest } from 'express';
+import config from 'config/config';
 
 // Интерфейс для payload токена
 interface JwtPayload {
@@ -33,18 +34,19 @@ export class JwtRefreshStrategy extends PassportStrategy(
     super({
       jwtFromRequest: ExtractJwt.fromBodyField('refreshToken'), // Извлекаем refreshToken из тела запроса
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_REFRESH_SECRET || 'default_refresh_secret',
+      secretOrKey: config.jwt.refreshSecret,
       passReqToCallback: true, // Передаем объект req в validate
     });
   }
 
   // Validate JWT payload and check refreshToken
   async validate(
-    req: Request,
+    req: ExpressRequest,
     payload: JwtPayload,
   ): Promise<{ sub: string; email: string }> {
     // Извлекаем refreshToken из тела запроса
-    const refreshToken: string = req.body.refreshToken;
+    const refreshToken: string = (req.body as { refreshToken: string })
+      .refreshToken;
     if (!refreshToken) {
       throw new UnauthorizedException('Refresh-токен не предоставлен');
     }
