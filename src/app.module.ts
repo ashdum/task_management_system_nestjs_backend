@@ -11,12 +11,12 @@ import { ColumnsModule } from './modules/columns/columns.module';
 import { CardsModule } from './modules/cards/cards.module';
 import { databaseConfig } from './config/database.config';
 
-console.log(
+/* console.log(
   'Database Config Entities:',
   databaseConfig.entities
     ? (databaseConfig.entities as Function[]).map((e) => e.name)
     : 'Entities are undefined',
-);
+); */
 
 @Module({
   imports: [

@@ -31,7 +31,7 @@ export class CardsController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Создать новую карточку' })
   @ApiBody({ type: CreateCardDto })
   @ApiResponse({ status: 201, description: 'Карточка создана', type: Card })
@@ -44,7 +44,7 @@ export class CardsController {
 
   @Get('column/:columnId')
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+ @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Получить все карточки колонки' })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
@@ -62,7 +62,7 @@ export class CardsController {
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+ @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Получить карточку по ID' })
   @ApiResponse({ status: 200, description: 'Детали карточки', type: Card })
   @ApiResponse({ status: 401, description: 'Не авторизован' })
@@ -73,7 +73,7 @@ export class CardsController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+ @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Обновить карточку по ID' })
   @ApiBody({ type: UpdateCardDto })
   @ApiResponse({ status: 200, description: 'Карточка обновлена', type: Card })
@@ -89,7 +89,7 @@ export class CardsController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+ @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Удалить карточку по ID' })
   @ApiResponse({ status: 200, description: 'Карточка удалена' })
   @ApiResponse({ status: 401, description: 'Не авторизован' })

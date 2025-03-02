@@ -26,11 +26,11 @@ import { ColumnEntity } from './entities/column.entity';
 @ApiTags('Columns')
 @Controller('columns')
 export class ColumnsController {
-  constructor(private readonly columnsService: ColumnsService) {}
+  constructor(private readonly columnsService: ColumnsService) { }
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Создать новую колонку' })
   @ApiBody({ type: CreateColumnDto })
   @ApiResponse({
@@ -49,7 +49,7 @@ export class ColumnsController {
 
   @Get('dashboard/:dashboardId')
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Получить все колонки дашборда' })
   @ApiResponse({
     status: 200,
@@ -66,7 +66,7 @@ export class ColumnsController {
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Получить колонку по ID' })
   @ApiResponse({
     status: 200,
@@ -81,7 +81,7 @@ export class ColumnsController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Обновить колонку по ID' })
   @ApiBody({ type: UpdateColumnDto })
   @ApiResponse({
@@ -101,7 +101,7 @@ export class ColumnsController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({
     summary: 'Удалить колонку по ID (только для администратора)',
   })
