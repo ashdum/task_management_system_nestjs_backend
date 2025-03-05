@@ -38,6 +38,6 @@ export class Attachment extends BaseEntity {
     type: () => Card,
   })
   @ManyToOne(() => Card, (card) => card.attachments)
-  @Index('idx_attachments_cardId') // Индекс сохраняем
+  @Index('idx_attachments_cardId')
   card!: Card;
 }

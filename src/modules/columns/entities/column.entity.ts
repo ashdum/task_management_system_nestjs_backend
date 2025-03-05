@@ -31,6 +31,6 @@ export class ColumnEntity extends BaseEntity {
     type: () => Dashboard,
   })
   @ManyToOne(() => Dashboard, (dashboard) => dashboard.columns)
-  @Index('idx_columns_dashboardId') // Индекс сохраняем
+  @Index('idx_columns_dashboardId')
   dashboard!: Dashboard;
 }

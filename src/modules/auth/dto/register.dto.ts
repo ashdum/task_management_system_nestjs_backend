@@ -8,15 +8,15 @@ import {
 
 export class RegisterDto {
   @ApiProperty({
-    description: 'Адрес электронной почты пользователя',
+    description: 'User email address',
     example: 'user@example.com',
   })
-  @IsEmail({}, { message: 'Неверный формат email' })
+  @IsEmail({}, { message: 'Invalid email format' })
   email!: string;
 
   @ApiProperty({
     description:
-      'Пароль пользователя (минимум 8 символов, с заглавной буквой, строчной буквой, цифрой и спецсимволом)',
+      'User password (minimum 8 characters, with uppercase letter, lowercase letter, number, and special character)',
     example: 'Password123!',
   })
   @IsStrongPassword()
@@ -24,7 +24,7 @@ export class RegisterDto {
 
   @ApiProperty({
     description:
-      'Полное имя пользователя (2-50 символов, только буквы, пробелы, дефисы и апострофы)',
+      'User full name (2-50 characters, only letters, spaces, hyphens, and apostrophes)',
     example: 'John Doe',
     required: false,
   })
@@ -33,7 +33,7 @@ export class RegisterDto {
   fullName?: string;
 
   @ApiProperty({
-    description: 'URL аватара пользователя',
+    description: 'URL of the user avatar',
     example: 'https://example.com/avatar.jpg',
     required: false,
   })

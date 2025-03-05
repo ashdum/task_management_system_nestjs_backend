@@ -7,10 +7,10 @@ import { RedisUtil } from '../../../common/utils/redis.util';
 import { Request as ExpressRequest } from 'express';
 import config from 'config/config';
 
-// Интерфейс для payload токена
+// Interface for token payload
 interface JwtPayload {
-  sub: string; // ID пользователя
-  email: string; // Email пользователя
+  sub: string; // User ID
+  email: string; // User email
   user: {
     id: string;
     email: string;
@@ -32,7 +32,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: config.jwt.accessSecret,
-      passReqToCallback: true, // Передаем объект req в validate
+      passReqToCallback: true, // Pass the request object to validate
     });
   }
 
@@ -41,26 +41,26 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     req: ExpressRequest,
     payload: JwtPayload,
   ): Promise<{ sub: string; email: string }> {
-    // Извлекаем accessToken из заголовка Authorization
+    // Extract accessToken from Authorization header
     const accessToken = req.headers.authorization?.replace('Bearer ', '');
     if (!accessToken) {
-      throw new UnauthorizedException('Access-токен не предоставлен');
+      throw new UnauthorizedException('Access token not provided');
     }
 
     const user = await this.authService.validateUser(payload.sub);
     if (!user) {
       throw new UnauthorizedException(
-        'Пользователь не найден или токен недействителен',
+        'User not found or token is invalid',
       );
     }
 
-    // Получаем текущий accessToken из Redis
+    // Retrieve the current accessToken from Redis
     const storedAccessToken = await this.redisUtil.getToken(
       `access_token:${payload.sub}`,
     );
     if (!storedAccessToken || storedAccessToken !== accessToken) {
       throw new UnauthorizedException(
-        'Access-токен недействителен или устарел',
+        'Access token is invalid or expired',
       );
     }
 

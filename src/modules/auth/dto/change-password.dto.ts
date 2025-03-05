@@ -5,27 +5,27 @@ import { IsStrongPassword } from 'common/decorators/validation';
 
 export class ChangePasswordDto {
   @ApiProperty({
-    description: 'ID пользователя, чей пароль нужно изменить',
+    description: 'ID of the user whose password needs to be changed',
     example: '123e4567-e89b-12d3-a456-426614174000',
   })
-  @IsNotEmpty({ message: 'ID пользователя обязателен' })
-  @IsString({ message: 'ID пользователя должен быть строкой' })
+  @IsNotEmpty({ message: 'User ID is required' })
+  @IsString({ message: 'User ID must be a string' })
   userId!: string;
 
   @ApiProperty({
-    description: 'Текущий (старый) пароль пользователя',
+    description: 'Current (old) user password',
     example: 'current_password123',
   })
-  @IsNotEmpty({ message: 'Старый пароль обязателен' })
-  @IsString({ message: 'Старый пароль должен быть строкой' })
+  @IsNotEmpty({ message: 'Old password is required' })
+  @IsString({ message: 'Old password must be a string' })
   oldPassword!: string;
 
   @ApiProperty({
     description:
-      'Новый пароль пользователя (минимум 8 символов, с заглавной буквой, строчной буквой, цифрой и спецсимволом)',
+      'New user password (minimum 8 characters, with uppercase letter, lowercase letter, number, and special character)',
     example: 'NewPassword123!',
   })
-  @IsNotEmpty({ message: 'Новый пароль обязателен' })
+  @IsNotEmpty({ message: 'New password is required' })
   @IsStrongPassword()
   newPassword!: string;
 }

@@ -11,7 +11,7 @@ export class LoginDto {
   email!: string;
 
   @ApiProperty({
-    description: 'User password (minimum 6 characters)',
+    description: 'User password (minimum 8 characters, with uppercase letter, lowercase letter, number, and special character)',
     example: 'Password123!',
   })
   @IsNotEmpty({ message: 'Password is required' })

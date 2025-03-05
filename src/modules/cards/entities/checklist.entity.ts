@@ -25,6 +25,6 @@ export class Checklist extends BaseEntity {
     type: () => Card,
   })
   @ManyToOne(() => Card, (card) => card.checklists)
-  @Index('idx_checklists_cardId') // Индекс сохраняем
+  @Index('idx_checklists_cardId')
   card!: Card;
 }

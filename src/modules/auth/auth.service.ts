@@ -11,7 +11,7 @@ import { UsersService } from '../users/users.service';
 import { OAuth2Client } from 'google-auth-library';
 import config from 'config/config';
 
-// Интерфейсы для типизации данных от GitHub
+// Interfaces for typing data from GitHub
 interface GitHubTokenResponse {
   access_token: string;
   token_type: string;
@@ -54,7 +54,7 @@ export class AuthService {
     });
     if (existingUser) {
       throw new UnauthorizedException(
-        'Пользователь с таким email уже существует',
+        "User with this email already exists",
       );
     }
 
@@ -82,7 +82,7 @@ export class AuthService {
       .getOne();
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      throw new UnauthorizedException('Неверные учетные данные');
+      throw new UnauthorizedException('Invalid credentials');
     }
 
     return this.generateTokens(user);
@@ -96,7 +96,7 @@ export class AuthService {
       where: { id: user.sub },
     });
     if (!foundUser) {
-      throw new UnauthorizedException('Пользователь не найден');
+      throw new UnauthorizedException('User not found');
     }
 
     return this.generateTokens(foundUser);
@@ -118,7 +118,7 @@ export class AuthService {
 
     const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Неверный старый пароль');
+      throw new UnauthorizedException('Invalid old password');
     }
 
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
@@ -135,11 +135,11 @@ export class AuthService {
   ): Promise<{ accessToken: string; refreshToken: string; user: User }> {
     const ticket = await this.googleClient.verifyIdToken({
       idToken: credential,
-      audience: this.githubClientId, // Здесь должен быть config.oauth.google.clientId, исправим
+      audience: config.oauth.google.clientId, 
     });
     const payload = ticket.getPayload();
     if (!payload || !payload.email)
-      throw new UnauthorizedException('Неверный токен Google');
+      throw new UnauthorizedException('Invalid Google token');
 
     return this.loginWithOAuth({
       email: payload.email,
@@ -169,18 +169,18 @@ export class AuthService {
           }),
         },
       );
-      const tokenData: GitHubTokenResponse = await tokenResponse.json(); // Явный тип
+      const tokenData: GitHubTokenResponse = await tokenResponse.json();
 
       if (!tokenData.access_token)
-        throw new UnauthorizedException('Ошибка получения токена GitHub');
+        throw new UnauthorizedException('Failed to obtain GitHub token');
 
       const userResponse = await fetch('https://api.github.com/user', {
         headers: { Authorization: `token ${tokenData.access_token}` },
       });
-      const userData: GitHubUserResponse = await userResponse.json(); // Явный тип
+      const userData: GitHubUserResponse = await userResponse.json();
 
       if (!userData.id) {
-        throw new UnauthorizedException('Пользователь GitHub не предоставил ID');
+        throw new UnauthorizedException('GitHub user did not provide an ID');
       }
 
       return this.loginWithOAuth({
@@ -192,7 +192,7 @@ export class AuthService {
       });
     } catch (error) {
       console.error('Error fetching GitHub token:', error);
-      throw new UnauthorizedException('Ошибка получения токена GitHub');
+      throw new UnauthorizedException('Failed to obtain GitHub token');
     }
   }
 
@@ -221,7 +221,7 @@ export class AuthService {
         });
         await this.userRepository.save(user);
       } else {
-        user.providerId = oauthUser.oauthId; // Исправляем доступ к свойству
+        user.providerId = oauthUser.oauthId; // Update providerId
         await this.userRepository.save(user);
       }
     }
@@ -287,14 +287,14 @@ export class AuthService {
   async validateUser(userId: string): Promise<{ sub: string; email: string }> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
-      throw new UnauthorizedException('Пользователь не найден');
+      throw new UnauthorizedException('User not found');
     }
 
     const tokenExists = await this.redisUtil.tokenExists(
       `access_token:${userId}`,
     );
     if (!tokenExists) {
-      throw new UnauthorizedException('Токен недействителен или истек');
+      throw new UnauthorizedException('Token is invalid or expired');
     }
 
     return { sub: user.id, email: user.email };

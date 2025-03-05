@@ -15,6 +15,6 @@ export class Label extends BaseEntity {
 
   @ApiProperty({ description: 'Card the label belongs to', type: () => Card })
   @ManyToOne(() => Card, (card) => card.labels)
-  @Index('idx_labels_cardId') // Индекс сохраняем
+  @Index('idx_labels_cardId')
   card!: Card;
 }

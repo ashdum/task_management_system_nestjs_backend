@@ -69,8 +69,8 @@ describe('InvitationsController (e2e)', () => {
     cardRepository = moduleFixture.get<Repository<Card>>(getRepositoryToken(Card)); // Инициализируем репозиторий Card
     redisUtil = moduleFixture.get<RedisUtil>(RedisUtil);
 
-    // Очистка таблиц в правильном порядке
-    await cardRepository.delete({}); // Сначала очищаем cards
+    // Cleaning the tables in the correct order
+    await cardRepository.delete({}); // First we clear cards
     await columnRepository.delete({});
     await invitationRepository.delete({});
     await dashboardUserRepository.delete({});
@@ -117,7 +117,6 @@ describe('InvitationsController (e2e)', () => {
     const createInvitationDto = {
       dashboardId,
       inviteeEmail: 'invitee@example.com',
-      status: 'pending',
     };
 
     const response = await request(app.getHttpServer())

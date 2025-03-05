@@ -1,5 +1,5 @@
 // src/modules/invitations/dto/create-invitation.dto.ts
-import { IsEmail, IsEnum, IsNotEmpty } from 'class-validator';
+import { IsEmail, IsNotEmpty } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateInvitationDto {
@@ -16,12 +16,4 @@ export class CreateInvitationDto {
   })
   @IsEmail()
   inviteeEmail!: string;
-
-  @ApiProperty({
-    description: 'Status of the invitation',
-    example: 'pending',
-    enum: ['pending', 'accepted', 'rejected'],
-  })
-  @IsEnum(['pending', 'accepted', 'rejected'])
-  status!: 'pending' | 'accepted' | 'rejected';
 }

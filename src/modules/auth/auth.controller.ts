@@ -27,7 +27,7 @@ import {
 } from '@nestjs/swagger';
 import { User } from '../users/entities/user.entity';
 
-// DTO для ответа
+// DTO for response
 class AuthResponse {
   @ApiProperty({ example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' })
   accessToken!: string;
@@ -45,7 +45,7 @@ class RefreshDto {
 }
 
 class LogoutResponse {
-  @ApiProperty({ example: 'Выход успешен' })
+  @ApiProperty({ example: 'Logout successful' })
   message!: string;
 }
 
@@ -56,16 +56,16 @@ export class AuthController {
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Зарегистрировать нового пользователя' })
+  @ApiOperation({ summary: 'Register a new user' })
   @ApiResponse({
     status: 201,
-    description: 'Пользователь успешно зарегистрирован',
+    description: 'User registered successfully',
     type: AuthResponse,
   })
-  @ApiResponse({ status: 400, description: 'Неверный формат запроса' })
+  @ApiResponse({ status: 400, description: 'Invalid request format' })
   @ApiResponse({
     status: 409,
-    description: 'Пользователь с таким email уже существует',
+    description: 'User with this email already exists',
   })
   @ApiBody({ type: RegisterDto })
   async register(@RequestBody() registerDto: RegisterDto) {
@@ -74,9 +74,9 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Вход пользователя и получение JWT-токенов' })
-  @ApiResponse({ status: 200, description: 'Вход успешен', type: AuthResponse })
-  @ApiResponse({ status: 401, description: 'Неверные учетные данные' })
+  @ApiOperation({ summary: 'User login and JWT token retrieval' })
+  @ApiResponse({ status: 200, description: 'Login successful', type: AuthResponse })
+  @ApiResponse({ status: 401, description: 'Invalid credentials' })
   @ApiBody({ type: LoginDto })
   async login(@RequestBody() loginDto: LoginDto) {
     return this.authService.login(loginDto);
@@ -85,15 +85,15 @@ export class AuthController {
   @Post('refresh')
   @UseGuards(JwtRefreshGuard)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Обновление JWT-токенов' })
+  @ApiOperation({ summary: 'Refresh JWT tokens' })
   @ApiBody({ type: RefreshDto })
   @ApiResponse({
     status: 200,
-    description: 'Токены успешно обновлены',
+    description: 'Tokens refreshed successfully',
     type: AuthResponse,
   })
-  @ApiResponse({ status: 400, description: 'Refresh-токен не предоставлен' })
-  @ApiResponse({ status: 401, description: 'Refresh-токен недействителен' })
+  @ApiResponse({ status: 400, description: 'Refresh token not provided' })
+  @ApiResponse({ status: 401, description: 'Refresh token is invalid' })
   async refreshTokens(
     @RequestBody('refreshToken') refreshToken: string,
     @CustomRequest() req: { user: { sub: string; email: string } },
@@ -107,32 +107,32 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Выход пользователя' })
+  @ApiOperation({ summary: 'User logout' })
   @ApiResponse({
     status: 200,
-    description: 'Выход успешен',
+    description: 'Logout successful',
     type: LogoutResponse,
   })
-  @ApiResponse({ status: 401, description: 'Не авторизован' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async logout(@CustomRequest() req: { user: { sub: string } }) {
     await this.authService.logout(req.user.sub);
-    return { message: 'Выход успешен' };
+    return { message: 'Logout successful' };
   }
 
   @Post('change-password')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Смена пароля пользователя' })
+  @ApiOperation({ summary: 'Change user password' })
   @ApiResponse({
     status: 200,
-    description: 'Пароль успешно изменен',
+    description: 'Password changed successfully',
     type: AuthResponse,
   })
-  @ApiResponse({ status: 400, description: 'Неверный формат запроса' })
+  @ApiResponse({ status: 400, description: 'Invalid request format' })
   @ApiResponse({
     status: 401,
-    description: 'Неверный старый пароль или не авторизован',
+    description: 'Invalid old password or unauthorized',
   })
   @ApiBody({ type: ChangePasswordDto })
   async changePassword(@RequestBody() changePasswordDto: ChangePasswordDto) {
@@ -145,7 +145,7 @@ export class AuthController {
 
   @Post('google')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Вход через Google' })
+  @ApiOperation({ summary: 'Login via Google' })
   @ApiBody({
     schema: {
       type: 'object',
@@ -156,10 +156,10 @@ export class AuthController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Вход через Google успешен',
+    description: 'Login via Google successful',
     type: AuthResponse,
   })
-  @ApiResponse({ status: 400, description: 'Неверный токен Google' })
+  @ApiResponse({ status: 400, description: 'Invalid Google token' })
   async googleLogin(@RequestBody('credential') credential: string) {
     if (!credential)
       throw new BadRequestException('Google credential is required');
@@ -177,10 +177,10 @@ export class AuthController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Вход через GitHub успешен',
+    description: 'Login via GitHub successful',
     type: AuthResponse,
   })
-  @ApiResponse({ status: 400, description: 'Ошибка авторизации GitHub' })
+  @ApiResponse({ status: 400, description: 'GitHub authorization error' })
   async githubCallback(@RequestBody('code') code: string) {
     if (!code) throw new BadRequestException('GitHub code is required');
     return this.authService.githubCall(code);

@@ -18,6 +18,6 @@ export class ChecklistItem extends BaseEntity {
     type: () => Checklist,
   })
   @ManyToOne(() => Checklist, (checklist) => checklist.items)
-  @Index('idx_checklist_items_checklistId') // Индекс сохраняем
+  @Index('idx_checklist_items_checklistId')
   checklist!: Checklist;
 }

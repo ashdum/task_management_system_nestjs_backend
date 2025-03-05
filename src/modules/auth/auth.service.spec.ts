@@ -8,12 +8,12 @@ import { RedisUtil } from '../../common/utils/redis.util';
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 
-// Мокаем bcrypt
+// Mock bcrypt
 jest.mock('bcrypt', () => ({
     hash: jest.fn().mockResolvedValue('hashed-password'),
 }));
 
-// Мокаем RedisUtil
+// Mock RedisUtil
 jest.mock('../../common/utils/redis.util', () => ({
     RedisUtil: jest.fn().mockImplementation(() => ({
         setToken: jest.fn().mockResolvedValue(undefined),
@@ -31,8 +31,8 @@ describe('AuthService', () => {
         email: 'test@example.com',
         password: 'hashed-password',
         fullName: 'Test User',
-        createdAt: new Date('2023-01-01T00:00:00Z'), // Добавляем createdAt
-        updatedAt: new Date('2023-01-01T00:00:00Z'), // Добавляем updatedAt
+        createdAt: new Date('2023-01-01T00:00:00Z'), 
+        updatedAt: new Date('2023-01-01T00:00:00Z'),
     };
 
     beforeEach(async () => {
@@ -53,7 +53,7 @@ describe('AuthService', () => {
                         sign: jest.fn().mockReturnValue('mock-token'),
                     },
                 },
-                RedisUtil, // Используем замоканный RedisUtil
+                RedisUtil, 
                 {
                     provide: UsersService,
                     useValue: {

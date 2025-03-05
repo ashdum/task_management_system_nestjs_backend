@@ -22,30 +22,29 @@ export class InvitationsService {
     inviterId: string,
     inviterEmail: string,
   ): Promise<DashboardInvitation> {
-    const { dashboardId, inviteeEmail, status } = createInvitationDto;
+    const { dashboardId, inviteeEmail } = createInvitationDto;
 
-    // Находим dashboard по ID
+    // Find dashboard by ID
     const dashboard = await this.dashboardRepository.findOne({
       where: { id: dashboardId },
     });
     if (!dashboard) {
-      throw new NotFoundException(`Дашборд с ID ${dashboardId} не найден`);
+      throw new NotFoundException(`Dashboard with ID ${dashboardId} not found`);
     }
 
-    // Находим inviter по ID
+    // Find inviter by ID
     const inviter = await this.userRepository.findOne({
       where: { id: inviterId },
     });
     if (!inviter) {
-      throw new NotFoundException(`Пользователь с ID ${inviterId} не найден`);
+      throw new NotFoundException(`User with ID ${inviterId} not found`);
     }
 
     const invitation = this.invitationRepository.create({
-      dashboard, // Используем свойство dashboard
-      inviter, // Используем свойство inviter
+      dashboard,
+      inviter,
       inviterEmail,
       inviteeEmail,
-      status,
     });
 
     return this.invitationRepository.save(invitation);

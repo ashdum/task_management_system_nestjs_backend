@@ -2,22 +2,26 @@
 import {
   IsArray,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsString,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateCardDto {
-  @ApiProperty({ description: 'Card number', example: 1 })
-  @IsNotEmpty()
-  @IsNumber()
-  number!: number;
-
   @ApiProperty({ description: 'Title of the card', example: 'Task 1' })
   @IsNotEmpty()
   @IsString()
   title!: string;
+
+  @ApiProperty({ description: 'ID of the dashboard', example: 'dashboard-id' })
+  @IsNotEmpty()
+  @IsString()
+  dashboardId!: string;
+
+  @ApiProperty({ description: 'ID of the column', example: 'column-id' })
+  @IsNotEmpty()
+  @IsString()
+  columnId!: string;
 
   @ApiProperty({
     description: 'Description of the card',
@@ -27,11 +31,6 @@ export class CreateCardDto {
   @IsOptional()
   @IsString()
   description?: string;
-
-  @ApiProperty({ description: 'ID of the column', example: 'column-id' })
-  @IsNotEmpty()
-  @IsString()
-  columnId!: string;
 
   @ApiProperty({
     description: 'IDs of members assigned to the card',

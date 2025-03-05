@@ -30,18 +30,18 @@ export class InvitationsController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Создать новое приглашение в дашборд' })
+  @ApiOperation({ summary: 'Create a new invitation to a dashboard' })
   @ApiBody({ type: CreateInvitationDto })
   @ApiResponse({
     status: 201,
-    description: 'Приглашение создано',
+    description: 'Invitation created successfully',
     type: DashboardInvitation,
   })
-  @ApiResponse({ status: 400, description: 'Неверный формат запроса' })
-  @ApiResponse({ status: 401, description: 'Не авторизован' })
-  @ApiResponse({ status: 403, description: 'Нет доступа к дашборду' })
+  @ApiResponse({ status: 400, description: 'Invalid request format' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'No access to the dashboard' })
   create(
-    @RequestBody() createInvitationDto: CreateInvitationDto, // Убираем псевдоним Body
+    @RequestBody() createInvitationDto: CreateInvitationDto,
     @Req() req: AuthenticatedRequest,
   ): Promise<DashboardInvitation> {
     return this.invitationsService.create(

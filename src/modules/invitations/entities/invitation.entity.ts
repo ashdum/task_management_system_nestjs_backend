@@ -37,7 +37,7 @@ export class DashboardInvitation extends BaseEntity {
     type: () => Dashboard,
   })
   @ManyToOne(() => Dashboard, (dashboard) => dashboard.invitations)
-  @Index('idx_dashboard_invitations_dashboardId') // Индекс сохраняем
+  @Index('idx_dashboard_invitations_dashboardId')
   dashboard!: Dashboard;
 
   @ApiProperty({
@@ -45,6 +45,6 @@ export class DashboardInvitation extends BaseEntity {
     type: () => User,
   })
   @ManyToOne(() => User, (user) => user.sentInvitations)
-  @Index('idx_dashboard_invitations_inviterId') // Индекс сохраняем
+  @Index('idx_dashboard_invitations_inviterId')
   inviter!: User;
 }

@@ -12,6 +12,7 @@ import {
 import { ColumnsService } from './columns.service';
 import { CreateColumnDto } from './dto/create-column.dto';
 import { UpdateColumnDto } from './dto/update-column.dto';
+import { UpdateOrderDto } from './dto/update-order.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import {
@@ -26,21 +27,21 @@ import { ColumnEntity } from './entities/column.entity';
 @ApiTags('Columns')
 @Controller('columns')
 export class ColumnsController {
-  constructor(private readonly columnsService: ColumnsService) { }
+  constructor(private readonly columnsService: ColumnsService) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Создать новую колонку' })
+  @ApiOperation({ summary: 'Create a new column' })
   @ApiBody({ type: CreateColumnDto })
   @ApiResponse({
     status: 201,
-    description: 'Колонка создана',
+    description: 'Column created successfully',
     type: ColumnEntity,
   })
-  @ApiResponse({ status: 400, description: 'Неверный формат запроса' })
-  @ApiResponse({ status: 401, description: 'Не авторизован' })
-  @ApiResponse({ status: 403, description: 'Нет доступа к дашборду' })
+  @ApiResponse({ status: 400, description: 'Invalid request format' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'No access to the dashboard' })
   create(
     @RequestBody() createColumnDto: CreateColumnDto,
   ): Promise<ColumnEntity> {
@@ -50,14 +51,14 @@ export class ColumnsController {
   @Get('dashboard/:dashboardId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Получить все колонки дашборда' })
+  @ApiOperation({ summary: 'Get all columns for a dashboard' })
   @ApiResponse({
     status: 200,
-    description: 'Список колонок',
+    description: 'List of columns',
     type: [ColumnEntity],
   })
-  @ApiResponse({ status: 401, description: 'Не авторизован' })
-  @ApiResponse({ status: 404, description: 'Дашборд не найден' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'Dashboard not found' })
   findAllByDashboard(
     @Param('dashboardId') dashboardId: string,
   ): Promise<ColumnEntity[]> {
@@ -67,31 +68,50 @@ export class ColumnsController {
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Получить колонку по ID' })
+  @ApiOperation({ summary: 'Get a column by ID' })
   @ApiResponse({
     status: 200,
-    description: 'Детали колонки',
+    description: 'Column details',
     type: ColumnEntity,
   })
-  @ApiResponse({ status: 401, description: 'Не авторизован' })
-  @ApiResponse({ status: 404, description: 'Колонка не найдена' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'Column not found' })
   findOne(@Param('id') id: string): Promise<ColumnEntity> {
     return this.columnsService.findOne(id);
+  }
+
+  @Patch('order')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Update the order of columns for a dashboard' })
+  @ApiBody({ type: UpdateOrderDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Column order updated successfully',
+    type: [ColumnEntity],
+  })
+  @ApiResponse({ status: 400, description: 'Invalid request format' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'Dashboard or columns not found' })
+  async updateOrder(
+    @RequestBody() updateOrderDto: UpdateOrderDto,
+  ): Promise<ColumnEntity[]> {
+    return this.columnsService.updateOrder(updateOrderDto);
   }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Обновить колонку по ID' })
+  @ApiOperation({ summary: 'Update a column by ID' })
   @ApiBody({ type: UpdateColumnDto })
   @ApiResponse({
     status: 200,
-    description: 'Колонка обновлена',
+    description: 'Column updated successfully',
     type: ColumnEntity,
   })
-  @ApiResponse({ status: 401, description: 'Не авторизован' })
-  @ApiResponse({ status: 403, description: 'Нет доступа к колонке' })
-  @ApiResponse({ status: 404, description: 'Колонка не найдена' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'No access to the column' })
+  @ApiResponse({ status: 404, description: 'Column not found' })
   update(
     @Param('id') id: string,
     @RequestBody() updateColumnDto: UpdateColumnDto,
@@ -103,15 +123,15 @@ export class ColumnsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({
-    summary: 'Удалить колонку по ID (только для администратора)',
+    summary: 'Delete a column by ID (admin only)',
   })
-  @ApiResponse({ status: 200, description: 'Колонка удалена' })
-  @ApiResponse({ status: 401, description: 'Не авторизован' })
+  @ApiResponse({ status: 200, description: 'Column deleted successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({
     status: 403,
-    description: 'Только администратор может удалить колонку',
+    description: 'Only an admin can delete a column',
   })
-  @ApiResponse({ status: 404, description: 'Колонка не найдена' })
+  @ApiResponse({ status: 404, description: 'Column not found' })
   remove(@Param('id') id: string): Promise<void> {
     return this.columnsService.remove(id);
   }

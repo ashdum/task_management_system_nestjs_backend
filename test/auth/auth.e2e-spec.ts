@@ -59,7 +59,7 @@ describe('AuthController (e2e)', () => {
     invitationRepository = moduleFixture.get<Repository<DashboardInvitation>>(getRepositoryToken(DashboardInvitation));
     redisUtil = moduleFixture.get<RedisUtil>(RedisUtil);
 
-    // Очистка таблиц в правильном порядке
+    // Cleaning the tables in the correct order
     await invitationRepository.delete({});
     await dashboardUserRepository.delete({});
     await userRepository.delete({});
@@ -117,7 +117,7 @@ describe('AuthController (e2e)', () => {
     expect(response.body).toHaveProperty('accessToken');
     expect(response.body).toHaveProperty('refreshToken');
     expect(response.body.user.email).toBe('test@example.com');
-    userToken = response.body.accessToken; // Обновляем токен для следующих тестов
+    userToken = response.body.accessToken; // Update the token for the following tests
     await redisUtil.setToken(`access_token:${userId}`, userToken, 3600);
   });
 
@@ -134,7 +134,7 @@ describe('AuthController (e2e)', () => {
   });
 
   it('POST /auth/change-password - should change user password', async () => {
-    // Обновляем токен после logout, так как предыдущий стал недействительным
+    // Update the token after logout, as the previous one became invalid
     const loginDto = {
       email: 'test@example.com',
       password: 'TestPassword123!',

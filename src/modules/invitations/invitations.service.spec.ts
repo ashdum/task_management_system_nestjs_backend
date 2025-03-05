@@ -59,7 +59,6 @@ describe('InvitationsService', () => {
     const createInvitationDto = {
       dashboardId: 'dashboard-id',
       inviteeEmail: 'invitee@example.com',
-      status: 'pending' as const, // Указываем как литерал типа
     };
 
     const result = await service.create(createInvitationDto, 'user-id', 'test@example.com');
@@ -75,7 +74,6 @@ describe('InvitationsService', () => {
       inviter: mockUser,
       inviterEmail: 'test@example.com',
       inviteeEmail: 'invitee@example.com',
-      status: 'pending',
     });
     expect(invitationRepository.save).toHaveBeenCalledWith(mockInvitation);
     expect(result).toEqual(mockInvitation);

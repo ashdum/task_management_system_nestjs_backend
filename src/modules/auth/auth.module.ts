@@ -22,7 +22,7 @@ import config from 'config/config';
         signOptions: { expiresIn: config.jwt.accessExpiresIn },
       }),
     }),
-    UsersModule, // Импортируем UsersModule для доступа к UsersService
+    UsersModule, // Import UsersModule to access UsersService
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, JwtRefreshStrategy, RedisUtil],

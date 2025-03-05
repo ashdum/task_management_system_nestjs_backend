@@ -7,7 +7,7 @@ import { RedisUtil } from '../../../common/utils/redis.util';
 import { Request as ExpressRequest } from 'express';
 import config from 'config/config';
 
-// Интерфейс для payload токена
+// Interface for token payload
 interface JwtPayload {
   sub: string;
   email: string;
@@ -32,10 +32,10 @@ export class JwtRefreshStrategy extends PassportStrategy(
     private readonly redisUtil: RedisUtil,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromBodyField('refreshToken'), // Извлекаем refreshToken из тела запроса
+      jwtFromRequest: ExtractJwt.fromBodyField('refreshToken'), // Extract refreshToken from request body
       ignoreExpiration: false,
       secretOrKey: config.jwt.refreshSecret,
-      passReqToCallback: true, // Передаем объект req в validate
+      passReqToCallback: true, // Pass the request object to validate
     });
   }
 
@@ -44,27 +44,27 @@ export class JwtRefreshStrategy extends PassportStrategy(
     req: ExpressRequest,
     payload: JwtPayload,
   ): Promise<{ sub: string; email: string }> {
-    // Извлекаем refreshToken из тела запроса
+    // Extract refreshToken from request body
     const refreshToken: string = (req.body as { refreshToken: string })
       .refreshToken;
     if (!refreshToken) {
-      throw new UnauthorizedException('Refresh-токен не предоставлен');
+      throw new UnauthorizedException('Refresh token not provided');
     }
 
     const user = await this.authService.validateUser(payload.sub);
     if (!user) {
       throw new UnauthorizedException(
-        'Пользователь не найден или токен недействителен',
+        'User not found or token is invalid',
       );
     }
 
-    // Получаем текущий refreshToken из Redis
+    // Retrieve the current refreshToken from Redis
     const storedRefreshToken = await this.redisUtil.getToken(
       `refresh_token:${payload.sub}`,
     );
     if (!storedRefreshToken || storedRefreshToken !== refreshToken) {
       throw new UnauthorizedException(
-        'Refresh-токен недействителен или устарел',
+        'Refresh token is invalid or expired',
       );
     }
 
